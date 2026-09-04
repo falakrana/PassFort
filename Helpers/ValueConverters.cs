@@ -1,3 +1,4 @@
+using System;
 using System.Globalization;
 using System.Windows;
 using System.Windows.Data;
@@ -29,12 +30,18 @@ public class InverseBooleanToVisibilityConverter : IValueConverter
 }
 
 /// <summary>
-/// Converts null reference to Collapsed and non-null to Visible.
+/// Converts null reference or empty string to Collapsed and non-null to Visible.
 /// </summary>
 public class NullToVisibilityConverter : IValueConverter
 {
+    public static readonly NullToVisibilityConverter Instance = new();
+
     public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
     {
+        if (value is string str)
+        {
+            return string.IsNullOrEmpty(str) ? Visibility.Collapsed : Visibility.Visible;
+        }
         return value != null ? Visibility.Visible : Visibility.Collapsed;
     }
 
@@ -49,6 +56,8 @@ public class NullToVisibilityConverter : IValueConverter
 /// </summary>
 public class InverseNullToVisibilityConverter : IValueConverter
 {
+    public static readonly InverseNullToVisibilityConverter Instance = new();
+
     public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
     {
         return value == null ? Visibility.Visible : Visibility.Collapsed;

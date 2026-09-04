@@ -1,0 +1,144 @@
+<UserControl x:Class="PasswordManager.Views.LoginView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:helpers="clr-namespace:PasswordManager.Helpers"
+             mc:Ignorable="d" 
+             d:DesignHeight="500" d:DesignWidth="600">
+    <UserControl.Resources>
+        <BooleanToVisibilityConverter x:Key="BoolToVis" />
+        <helpers:InverseBooleanToVisibilityConverter x:Key="InverseBoolToVis" />
+    </UserControl.Resources>
+
+    <Grid Background="#F1F5F9">
+        <Border Width="420"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center"
+                Background="White"
+                CornerRadius="8"
+                Padding="32"
+                Effect="{DynamicResource ShadowEffect}">
+            <Border.Resources>
+                <DropShadowEffect x:Key="ShadowEffect" BlurRadius="20" ShadowDepth="4" Direction="270" Color="#20000000" />
+            </Border.Resources>
+
+            <StackPanel>
+                <!-- Lock Icon Header -->
+                <TextBlock Text="🔒" FontSize="40" HorizontalAlignment="Center" Margin="0,0,0,12" />
+
+                <!-- Title & Subtitle -->
+                <TextBlock Text="{Binding Title}"
+                           FontSize="20"
+                           FontWeight="Bold"
+                           Foreground="#1E293B"
+                           HorizontalAlignment="Center"
+                           TextWrapping="Wrap"
+                           Margin="0,0,0,6"/>
+
+                <TextBlock Text="{Binding Subtitle}"
+                           FontSize="13"
+                           Foreground="#64748B"
+                           HorizontalAlignment="Center"
+                           TextAlignment="Center"
+                           TextWrapping="Wrap"
+                           Margin="0,0,0,24"/>
+
+                <!-- Error Message Banner -->
+                <Border Background="#FEF2F2"
+                        BorderBrush="#FCA5A5"
+                        BorderThickness="1"
+                        CornerRadius="4"
+                        Padding="10,8"
+                        Margin="0,0,0,16"
+                        Visibility="{Binding ErrorMessage, Converter={x:Static helpers:NullToVisibilityConverter.Instance}}">
+                    <TextBlock Text="{Binding ErrorMessage}"
+                               Foreground="#991B1B"
+                               FontSize="12"
+                               TextWrapping="Wrap"
+                               HorizontalAlignment="Center" />
+                </Border>
+
+                <!-- Password Input -->
+                <TextBlock Text="Master Password"
+                           FontSize="12"
+                           FontWeight="SemiBold"
+                           Foreground="#334155"
+                           Margin="0,0,0,6" />
+
+                <Border BorderBrush="#CBD5E1"
+                        BorderThickness="1"
+                        CornerRadius="4"
+                        Padding="4"
+                        Margin="0,0,0,16">
+                    <PasswordBox x:Name="MasterPasswordBox"
+                                 FontSize="14"
+                                 BorderThickness="0"
+                                 Padding="6,4"
+                                 helpers:PasswordBoxHelper.Attach="True"
+                                 helpers:PasswordBoxHelper.BoundPassword="{Binding Password, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                </Border>
+
+                <!-- Confirm Password Input (First Run Only) -->
+                <StackPanel Visibility="{Binding IsFirstRun, Converter={StaticResource BoolToVis}}">
+                    <TextBlock Text="Confirm Master Password"
+                               FontSize="12"
+                               FontWeight="SemiBold"
+                               Foreground="#334155"
+                               Margin="0,0,0,6" />
+
+                    <Border BorderBrush="#CBD5E1"
+                            BorderThickness="1"
+                            CornerRadius="4"
+                            Padding="4"
+                            Margin="0,0,0,16">
+                        <PasswordBox x:Name="ConfirmPasswordBox"
+                                     FontSize="14"
+                                     BorderThickness="0"
+                                     Padding="6,4"
+                                     helpers:PasswordBoxHelper.Attach="True"
+                                     helpers:PasswordBoxHelper.BoundPassword="{Binding ConfirmPassword, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                    </Border>
+                </StackPanel>
+
+                <!-- Action Button: Setup Master Password (First Run) -->
+                <Button Content="Create Master Password &amp; Unlock Vault"
+                        Command="{Binding SetupCommand}"
+                        Visibility="{Binding IsFirstRun, Converter={StaticResource BoolToVis}}"
+                        Height="40"
+                        Background="#2563EB"
+                        Foreground="White"
+                        FontSize="14"
+                        FontWeight="SemiBold"
+                        BorderThickness="0"
+                        Cursor="Hand"
+                        Margin="0,8,0,0">
+                    <Button.Resources>
+                        <Style TargetType="Border">
+                            <Setter Property="CornerRadius" Value="6" />
+                        </Style>
+                    </Button.Resources>
+                </Button>
+
+                <!-- Action Button: Unlock Vault (Existing Vault) -->
+                <Button Content="Unlock Vault"
+                        Command="{Binding UnlockCommand}"
+                        Visibility="{Binding IsFirstRun, Converter={StaticResource InverseBoolToVis}}"
+                        Height="40"
+                        Background="#2563EB"
+                        Foreground="White"
+                        FontSize="14"
+                        FontWeight="SemiBold"
+                        BorderThickness="0"
+                        Cursor="Hand"
+                        Margin="0,8,0,0">
+                    <Button.Resources>
+                        <Style TargetType="Border">
+                            <Setter Property="CornerRadius" Value="6" />
+                        </Style>
+                    </Button.Resources>
+                </Button>
+            </StackPanel>
+        </Border>
+    </Grid>
+</UserControl>

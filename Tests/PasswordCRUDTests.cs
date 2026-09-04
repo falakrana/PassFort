@@ -1,4 +1,7 @@
+using System;
+using System.Linq;
 using PasswordManager.Models;
+using PasswordManager.Services.Authentication;
 using PasswordManager.Services.Vault;
 using PasswordManager.ViewModels;
 
@@ -15,6 +18,13 @@ public static class PasswordCRUDTests
         TestMainViewModelCRUDCommands();
         TestMainViewModelValidation();
         Console.WriteLine("[Tests] All Phase 3 Password CRUD tests passed successfully!");
+    }
+
+    private static IAuthenticationService CreateUnlockedAuthService()
+    {
+        var authService = new AuthenticationService();
+        authService.InitializeMasterPassword("TestMasterPassword123!", "TestMasterPassword123!", out _);
+        return authService;
     }
 
     private static void TestInMemoryPasswordServiceCRUD()
@@ -70,7 +80,8 @@ public static class PasswordCRUDTests
     private static void TestMainViewModelCRUDCommands()
     {
         IPasswordService service = new InMemoryPasswordService();
-        var vm = new MainViewModel(service);
+        IAuthenticationService authService = CreateUnlockedAuthService();
+        var vm = new MainViewModel(service, authService);
 
         // Initial selection
         if (vm.SelectedEntry == null)
@@ -128,7 +139,8 @@ public static class PasswordCRUDTests
     private static void TestMainViewModelValidation()
     {
         IPasswordService service = new InMemoryPasswordService();
-        var vm = new MainViewModel(service);
+        IAuthenticationService authService = CreateUnlockedAuthService();
+        var vm = new MainViewModel(service, authService);
 
         vm.AddNewCommand.Execute(null);
         vm.EditingEntry!.Title = ""; // Empty title

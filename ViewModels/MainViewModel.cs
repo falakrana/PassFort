@@ -1,18 +1,22 @@
+using System;
 using System.Collections.ObjectModel;
+using System.Linq;
 using System.Windows.Input;
 using PasswordManager.Commands;
 using PasswordManager.Models;
+using PasswordManager.Services.Authentication;
 using PasswordManager.Services.Vault;
 using PasswordManager.ViewModels.Base;
 
 namespace PasswordManager.ViewModels;
 
 /// <summary>
-/// Main window ViewModel coordinating password entries CRUD, selection, draft editing, and vault state.
+/// Main window ViewModel coordinating password entries CRUD, selection, vault security authentication, and vault state.
 /// </summary>
 public class MainViewModel : ViewModelBase
 {
     private readonly IPasswordService _passwordService;
+    private readonly IAuthenticationService _authService;
 
     private string _title = "Secure Password Manager — Vault";
     private string _statusMessage = "Ready";
@@ -23,9 +27,15 @@ public class MainViewModel : ViewModelBase
     private bool _isPasswordVisible;
     private string? _validationMessage;
 
-    public MainViewModel(IPasswordService passwordService)
+    public MainViewModel(IPasswordService passwordService, IAuthenticationService authService)
     {
         _passwordService = passwordService ?? throw new ArgumentNullException(nameof(passwordService));
+        _authService = authService ?? throw new ArgumentNullException(nameof(authService));
+
+        LoginViewModel = new LoginViewModel(_authService);
+        LoginViewModel.Authenticated += OnAuthenticated;
+
+        _authService.LockStateChanged += OnLockStateChanged;
 
         PasswordEntries = new ObservableCollection<PasswordEntry>();
 
@@ -35,16 +45,24 @@ public class MainViewModel : ViewModelBase
         CancelCommand = new RelayCommand(ExecuteCancel, CanExecuteCancel);
         DeleteCommand = new RelayCommand(ExecuteDelete, CanExecuteDelete);
         TogglePasswordVisibilityCommand = new RelayCommand(ExecuteTogglePasswordVisibility, CanExecuteTogglePasswordVisibility);
+        LockCommand = new RelayCommand(ExecuteLock, CanExecuteLock);
 
-        LoadEntries();
+        if (IsVaultUnlocked)
+        {
+            LoadEntries();
+        }
     }
 
     /// <summary>
     /// Parameterless constructor for XAML designer support.
     /// </summary>
-    public MainViewModel() : this(new InMemoryPasswordService())
+    public MainViewModel() : this(new InMemoryPasswordService(), new AuthenticationService())
     {
     }
+
+    public LoginViewModel LoginViewModel { get; }
+
+    public bool IsVaultUnlocked => _authService.IsUnlocked;
 
     public string Title
     {
@@ -125,6 +143,7 @@ public class MainViewModel : ViewModelBase
     public ICommand CancelCommand { get; }
     public ICommand DeleteCommand { get; }
     public ICommand TogglePasswordVisibilityCommand { get; }
+    public ICommand LockCommand { get; }
 
     public void LoadEntries()
     {
@@ -141,6 +160,36 @@ public class MainViewModel : ViewModelBase
         }
     }
 
+    private void OnAuthenticated()
+    {
+        OnPropertyChanged(nameof(IsVaultUnlocked));
+        LoadEntries();
+        StatusMessage = "Vault unlocked successfully.";
+    }
+
+    private void OnLockStateChanged()
+    {
+        OnPropertyChanged(nameof(IsVaultUnlocked));
+        if (!IsVaultUnlocked)
+        {
+            SelectedEntry = null;
+            EditingEntry = null;
+            IsAdding = false;
+            IsEditing = false;
+            IsPasswordVisible = false;
+            PasswordEntries.Clear();
+            LoginViewModel.RefreshState();
+            StatusMessage = "Vault locked.";
+        }
+    }
+
+    private void ExecuteLock()
+    {
+        _authService.Lock();
+    }
+
+    private bool CanExecuteLock() => IsVaultUnlocked;
+
     private void ExecuteAddNew()
     {
         EditingEntry = new PasswordEntry
@@ -156,7 +205,7 @@ public class MainViewModel : ViewModelBase
         StatusMessage = "Adding new password entry...";
     }
 
-    private bool CanExecuteAddNew() => !IsAdding && !IsEditing;
+    private bool CanExecuteAddNew() => IsVaultUnlocked && !IsAdding && !IsEditing;
 
     private void ExecuteEdit()
     {
@@ -169,7 +218,7 @@ public class MainViewModel : ViewModelBase
         StatusMessage = $"Editing '{SelectedEntry.Title}'...";
     }
 
-    private bool CanExecuteEdit() => SelectedEntry != null && !IsAdding && !IsEditing;
+    private bool CanExecuteEdit() => IsVaultUnlocked && SelectedEntry != null && !IsAdding && !IsEditing;
 
     private void ExecuteSave()
     {
@@ -211,7 +260,7 @@ public class MainViewModel : ViewModelBase
         SelectedEntry = PasswordEntries.FirstOrDefault(e => e.Id == savedId);
     }
 
-    private bool CanExecuteSave() => (IsAdding || IsEditing) && EditingEntry != null;
+    private bool CanExecuteSave() => IsVaultUnlocked && (IsAdding || IsEditing) && EditingEntry != null;
 
     private void ExecuteCancel()
     {
@@ -222,7 +271,7 @@ public class MainViewModel : ViewModelBase
         StatusMessage = SelectedEntry != null ? $"Selected: {SelectedEntry.Title}" : "Ready";
     }
 
-    private bool CanExecuteCancel() => IsAdding || IsEditing;
+    private bool CanExecuteCancel() => IsVaultUnlocked && (IsAdding || IsEditing);
 
     private void ExecuteDelete()
     {
@@ -237,14 +286,14 @@ public class MainViewModel : ViewModelBase
         LoadEntries();
     }
 
-    private bool CanExecuteDelete() => SelectedEntry != null && !IsAdding && !IsEditing;
+    private bool CanExecuteDelete() => IsVaultUnlocked && SelectedEntry != null && !IsAdding && !IsEditing;
 
     private void ExecuteTogglePasswordVisibility()
     {
         IsPasswordVisible = !IsPasswordVisible;
     }
 
-    private bool CanExecuteTogglePasswordVisibility() => SelectedEntry != null || EditingEntry != null;
+    private bool CanExecuteTogglePasswordVisibility() => IsVaultUnlocked && (SelectedEntry != null || EditingEntry != null);
 
     private void InvalidateCommandStates()
     {

@@ -1,5 +1,8 @@
+using System;
 using System.Windows;
 using Microsoft.Extensions.DependencyInjection;
+using PasswordManager.Services.Authentication;
+using PasswordManager.Services.Vault;
 using PasswordManager.ViewModels;
 
 namespace PasswordManager;
@@ -20,8 +23,10 @@ public partial class App : Application
     {
         base.OnStartup(e);
 
-        // Run automated unit test suite
+        // Run automated unit test suites
         Tests.MVVMTests.RunAllTests();
+        Tests.PasswordCRUDTests.RunAllTests();
+        Tests.MasterPasswordTests.RunAllTests();
 
         var serviceCollection = new ServiceCollection();
         ConfigureServices(serviceCollection);
@@ -40,7 +45,8 @@ public partial class App : Application
     private static void ConfigureServices(IServiceCollection services)
     {
         // Services
-        services.AddSingleton<Services.Vault.IPasswordService, Services.Vault.InMemoryPasswordService>();
+        services.AddSingleton<IPasswordService, InMemoryPasswordService>();
+        services.AddSingleton<IAuthenticationService, AuthenticationService>();
 
         // ViewModels
         services.AddTransient<MainViewModel>();

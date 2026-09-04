@@ -47,6 +47,12 @@ public static class Phase6SearchAndCategoryTests
 
     private static void PopulateTestVault(IPasswordService service)
     {
+        // Clear any initial seed sample entries
+        foreach (var entry in service.GetAll().ToList())
+        {
+            service.Delete(entry.Id);
+        }
+
         service.Add(new PasswordEntry { Title = "GitHub Account", Username = "octocat", Password = "Pass1", WebsiteUrl = "https://github.com", Category = "Development" });
         service.Add(new PasswordEntry { Title = "Twitter Profile", Username = "tweetmaster", Password = "Pass2", WebsiteUrl = "https://twitter.com", Category = "Social" });
         service.Add(new PasswordEntry { Title = "Corporate Email", Username = "alex@company.com", Password = "Pass3", WebsiteUrl = "https://mail.company.com", Category = "Work" });

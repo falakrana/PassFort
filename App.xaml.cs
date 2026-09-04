@@ -29,6 +29,7 @@ public partial class App : Application
         Tests.PasswordCRUDTests.RunAllTests();
         Tests.MasterPasswordTests.RunAllTests();
         Tests.Phase5EncryptionTests.RunAllTests();
+        Tests.Phase6SearchAndCategoryTests.RunAllTests();
 
         var serviceCollection = new ServiceCollection();
         ConfigureServices(serviceCollection);

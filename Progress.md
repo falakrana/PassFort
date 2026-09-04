@@ -2,7 +2,7 @@
 
 ## Project Status
 
-**Current Phase:** Phase 5 — Encryption & Persistent Vault
+**Current Phase:** Phase 6 — Search & Categories
 **Status:** Completed
 **Last Updated:** 2026-09-04
 
@@ -17,7 +17,7 @@
 | Phase 3  | Basic Password CRUD           | ✅ Completed  |
 | Phase 4  | Master Password               | ✅ Completed  |
 | Phase 5  | Encryption & Persistent Vault | ✅ Completed  |
-| Phase 6  | Search & Categories           | ⬜ Not Started |
+| Phase 6  | Search & Categories           | ✅ Completed  |
 | Phase 7  | Password Generator            | ⬜ Not Started |
 | Phase 8  | Clipboard Security            | ⬜ Not Started |
 | Phase 9  | Auto-Lock                     | ⬜ Not Started |
@@ -170,22 +170,22 @@ Encryption and persistent storage are intentionally postponed until Phase 5.
 
 # Phase 6 — Search & Categories
 
-**Status:** ⬜ Not Started
+**Status:** ✅ Completed
 
 ### Tasks
 
-* [ ] Search by title
-* [ ] Search by username
-* [ ] Search by website
-* [ ] Search by category
-* [ ] Category model
-* [ ] Category filtering
-* [ ] All category
-* [ ] Social category
-* [ ] Work category
-* [ ] Development category
-* [ ] Finance category
-* [ ] Personal category
+* [x] Search by title
+* [x] Search by username
+* [x] Search by website
+* [x] Search by category
+* [x] Category model
+* [x] Category filtering
+* [x] All category
+* [x] Social category
+* [x] Work category
+* [x] Development category
+* [x] Finance category
+* [x] Personal category
 
 ---
 

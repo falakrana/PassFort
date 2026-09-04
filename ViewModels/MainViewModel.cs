@@ -1,6 +1,9 @@
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Linq;
+using System.Windows.Data;
 using System.Windows.Input;
 using PasswordManager.Commands;
 using PasswordManager.Models;
@@ -12,7 +15,7 @@ using PasswordManager.ViewModels.Base;
 namespace PasswordManager.ViewModels;
 
 /// <summary>
-/// Main window ViewModel coordinating password entries CRUD, selection, vault security authentication, and vault state.
+/// Main window ViewModel coordinating password entries CRUD, selection, search & category filtering, and vault state.
 /// </summary>
 public class MainViewModel : ViewModelBase
 {
@@ -28,6 +31,10 @@ public class MainViewModel : ViewModelBase
     private bool _isPasswordVisible;
     private string? _validationMessage;
 
+    private string _searchText = string.Empty;
+    private string _selectedCategoryFilter = "All";
+    private readonly ICollectionView _filteredEntries;
+
     public MainViewModel(IPasswordService passwordService, IAuthenticationService authService)
     {
         _passwordService = passwordService ?? throw new ArgumentNullException(nameof(passwordService));
@@ -39,6 +46,8 @@ public class MainViewModel : ViewModelBase
         _authService.LockStateChanged += OnLockStateChanged;
 
         PasswordEntries = new ObservableCollection<PasswordEntry>();
+        _filteredEntries = CollectionViewSource.GetDefaultView(PasswordEntries);
+        _filteredEntries.Filter = FilterPasswordEntry;
 
         AddNewCommand = new RelayCommand(ExecuteAddNew, CanExecuteAddNew);
         EditCommand = new RelayCommand(ExecuteEdit, CanExecuteEdit);
@@ -47,6 +56,7 @@ public class MainViewModel : ViewModelBase
         DeleteCommand = new RelayCommand(ExecuteDelete, CanExecuteDelete);
         TogglePasswordVisibilityCommand = new RelayCommand(ExecuteTogglePasswordVisibility, CanExecuteTogglePasswordVisibility);
         LockCommand = new RelayCommand(ExecuteLock, CanExecuteLock);
+        ClearSearchCommand = new RelayCommand(ExecuteClearSearch, CanExecuteClearSearch);
 
         if (IsVaultUnlocked)
         {
@@ -83,6 +93,38 @@ public class MainViewModel : ViewModelBase
     }
 
     public ObservableCollection<PasswordEntry> PasswordEntries { get; }
+
+    public ICollectionView FilteredEntries => _filteredEntries;
+
+    public List<string> CategoriesFilterList => Category.FilterCategories;
+
+    public List<string> CategoriesList => Category.StandardCategories;
+
+    public string SearchText
+    {
+        get => _searchText;
+        set
+        {
+            if (SetProperty(ref _searchText, value))
+            {
+                _filteredEntries.Refresh();
+                InvalidateCommandStates();
+            }
+        }
+    }
+
+    public string SelectedCategoryFilter
+    {
+        get => _selectedCategoryFilter;
+        set
+        {
+            if (SetProperty(ref _selectedCategoryFilter, value))
+            {
+                _filteredEntries.Refresh();
+                InvalidateCommandStates();
+            }
+        }
+    }
 
     public PasswordEntry? SelectedEntry
     {
@@ -150,6 +192,7 @@ public class MainViewModel : ViewModelBase
     public ICommand DeleteCommand { get; }
     public ICommand TogglePasswordVisibilityCommand { get; }
     public ICommand LockCommand { get; }
+    public ICommand ClearSearchCommand { get; }
 
     public void LoadEntries()
     {
@@ -160,10 +203,54 @@ public class MainViewModel : ViewModelBase
             PasswordEntries.Add(entry);
         }
 
-        if (PasswordEntries.Any() && SelectedEntry == null)
+        _filteredEntries.Refresh();
+
+        if (_filteredEntries.Cast<PasswordEntry>().Any() && SelectedEntry == null)
         {
-            SelectedEntry = PasswordEntries.First();
+            SelectedEntry = _filteredEntries.Cast<PasswordEntry>().First();
         }
+    }
+
+    private bool FilterPasswordEntry(object item)
+    {
+        if (item is not PasswordEntry entry) return false;
+
+        // Category filter check
+        if (!string.IsNullOrEmpty(SelectedCategoryFilter) && !SelectedCategoryFilter.Equals("All", StringComparison.OrdinalIgnoreCase))
+        {
+            if (!string.Equals(entry.Category, SelectedCategoryFilter, StringComparison.OrdinalIgnoreCase))
+            {
+                return false;
+            }
+        }
+
+        // Search text check (title, username, website url, category)
+        if (!string.IsNullOrWhiteSpace(SearchText))
+        {
+            var query = SearchText.Trim();
+            bool matchesTitle = entry.Title?.Contains(query, StringComparison.OrdinalIgnoreCase) ?? false;
+            bool matchesUsername = entry.Username?.Contains(query, StringComparison.OrdinalIgnoreCase) ?? false;
+            bool matchesWebsite = entry.WebsiteUrl?.Contains(query, StringComparison.OrdinalIgnoreCase) ?? false;
+            bool matchesCategory = entry.Category?.Contains(query, StringComparison.OrdinalIgnoreCase) ?? false;
+
+            if (!matchesTitle && !matchesUsername && !matchesWebsite && !matchesCategory)
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    private void ExecuteClearSearch()
+    {
+        SearchText = string.Empty;
+        SelectedCategoryFilter = "All";
+    }
+
+    private bool CanExecuteClearSearch()
+    {
+        return !string.IsNullOrEmpty(SearchText) || (!string.IsNullOrEmpty(SelectedCategoryFilter) && !SelectedCategoryFilter.Equals("All", StringComparison.OrdinalIgnoreCase));
     }
 
     private void OnAuthenticated()
@@ -183,7 +270,10 @@ public class MainViewModel : ViewModelBase
             IsAdding = false;
             IsEditing = false;
             IsPasswordVisible = false;
+            SearchText = string.Empty;
+            SelectedCategoryFilter = "All";
             PasswordEntries.Clear();
+            _filteredEntries.Refresh();
             LoginViewModel.RefreshState();
             StatusMessage = "Vault locked.";
         }
@@ -306,3 +396,4 @@ public class MainViewModel : ViewModelBase
         CommandManager.InvalidateRequerySuggested();
     }
 }
+

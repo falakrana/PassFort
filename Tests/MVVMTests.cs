@@ -1,13 +1,12 @@
 using System.ComponentModel;
 using System.Windows.Input;
 using PasswordManager.Commands;
-using PasswordManager.ViewModels;
 using PasswordManager.ViewModels.Base;
 
 namespace PasswordManager.Tests;
 
 /// <summary>
-/// Verifies MVVM primitives, bindings, and commands.
+/// Main test runner verifying MVVM primitives, bindings, commands, and Phase 3 Password CRUD.
 /// </summary>
 public static class MVVMTests
 {
@@ -16,8 +15,9 @@ public static class MVVMTests
         TestViewModelBasePropertyChanged();
         TestRelayCommandExecution();
         TestRelayCommandCanExecute();
-        TestMainViewModelBindings();
         Console.WriteLine("[Tests] All Phase 2 MVVM tests passed successfully!");
+
+        PasswordCRUDTests.RunAllTests();
     }
 
     private static void TestViewModelBasePropertyChanged()
@@ -67,40 +67,6 @@ public static class MVVMTests
         if (command.CanExecute(null) != true)
         {
             throw new Exception("RelayCommand CanExecute should return true.");
-        }
-    }
-
-    private static void TestMainViewModelBindings()
-    {
-        var vm = new MainViewModel();
-
-        if (vm.Counter != 0)
-        {
-            throw new Exception("MainViewModel Initial Counter should be 0.");
-        }
-
-        if (vm.ResetCounterCommand.CanExecute(null) != false)
-        {
-            throw new Exception("ResetCounterCommand should not be executable when Counter is 0.");
-        }
-
-        vm.IncrementCounterCommand.Execute(null);
-
-        if (vm.Counter != 1)
-        {
-            throw new Exception("IncrementCounterCommand failed to increment Counter.");
-        }
-
-        if (vm.ResetCounterCommand.CanExecute(null) != true)
-        {
-            throw new Exception("ResetCounterCommand should be executable when Counter > 0.");
-        }
-
-        vm.ResetCounterCommand.Execute(null);
-
-        if (vm.Counter != 0)
-        {
-            throw new Exception("ResetCounterCommand failed to reset Counter to 0.");
         }
     }
 

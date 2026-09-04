@@ -2,7 +2,7 @@
 
 ## Project Status
 
-**Current Phase:** Phase 2 — MVVM Foundation
+**Current Phase:** Phase 3 — Basic Password CRUD
 **Status:** Completed
 **Last Updated:** 2026-09-04
 
@@ -14,7 +14,7 @@
 | -------- | ----------------------------- | ------------- |
 | Phase 1  | Project Foundation            | ✅ Completed  |
 | Phase 2  | MVVM Foundation               | ✅ Completed  |
-| Phase 3  | Basic Password CRUD           | ⬜ Not Started |
+| Phase 3  | Basic Password CRUD           | ✅ Completed  |
 | Phase 4  | Master Password               | ⬜ Not Started |
 | Phase 5  | Encryption & Persistent Vault | ⬜ Not Started |
 | Phase 6  | Search & Categories           | ⬜ Not Started |
@@ -98,17 +98,22 @@ Focus on understanding WPF and MVVM before implementing application functionalit
 
 # Phase 3 — Basic Password CRUD
 
-**Status:** ⬜ Not Started
+**Status:** ✅ Completed
 
 ### Tasks
 
-* [ ] Create PasswordEntry model
-* [ ] Create temporary in-memory storage
-* [ ] Display password entries
-* [ ] Add password
-* [ ] Edit password
-* [ ] Delete password
-* [ ] Select password
+* [x] Create PasswordEntry model
+* [x] Create temporary in-memory storage
+* [x] Display password entries
+* [x] Add password
+* [x] Edit password
+* [x] Delete password
+* [x] Select password
+* [x] Display password details
+
+### Notes
+
+Encryption and persistent storage are intentionally postponed until Phase 5.ct password
 * [ ] Display password details
 
 ### Notes

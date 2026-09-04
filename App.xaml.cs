@@ -20,6 +20,9 @@ public partial class App : Application
     {
         base.OnStartup(e);
 
+        // Run automated unit test suite
+        Tests.MVVMTests.RunAllTests();
+
         var serviceCollection = new ServiceCollection();
         ConfigureServices(serviceCollection);
 
@@ -36,6 +39,9 @@ public partial class App : Application
     /// <param name="services">The service collection to register into.</param>
     private static void ConfigureServices(IServiceCollection services)
     {
+        // Services
+        services.AddSingleton<Services.Vault.IPasswordService, Services.Vault.InMemoryPasswordService>();
+
         // ViewModels
         services.AddTransient<MainViewModel>();
 

@@ -1,27 +1,39 @@
 using System;
 using System.Security.Cryptography;
-using System.Text;
+using PasswordManager.Services.Encryption;
+using PasswordManager.Services.Vault;
 
 namespace PasswordManager.Services.Authentication;
 
 /// <summary>
-/// Handles master password setup, verification using PBKDF2 (HMAC-SHA256), and vault session lock state.
-/// Master passwords are never stored in plaintext.
+/// Handles master password setup, AES-GCM verification, key derivation via PBKDF2, and vault lock state management.
+/// Master passwords and keys are never stored in plaintext on disk.
 /// </summary>
 public class AuthenticationService : IAuthenticationService
 {
     private const int SaltSizeBytes = 16;
-    private const int HashSizeBytes = 32;
-    private const int Iterations = 100000;
     private const int MinPasswordLength = 8;
 
-    private byte[]? _salt;
-    private byte[]? _masterPasswordHash;
+    private readonly IVaultStorage _vaultStorage;
+    private readonly IEncryptionService _encryptionService;
+
+    private byte[]? _activeSalt;
+    private byte[]? _activeKey;
     private bool _isUnlocked;
 
-    public bool IsVaultInitialized => _masterPasswordHash != null && _salt != null;
+    public AuthenticationService(IVaultStorage vaultStorage, IEncryptionService encryptionService)
+    {
+        _vaultStorage = vaultStorage ?? throw new ArgumentNullException(nameof(vaultStorage));
+        _encryptionService = encryptionService ?? throw new ArgumentNullException(nameof(encryptionService));
+    }
 
-    public bool IsUnlocked => _isUnlocked;
+    public bool IsVaultInitialized => _vaultStorage.VaultExists() || (_activeSalt != null && _activeKey != null);
+
+    public bool IsUnlocked => _isUnlocked && _activeKey != null;
+
+    public byte[]? ActiveKey => _activeKey;
+
+    public byte[]? ActiveSalt => _activeSalt;
 
     public event Action? LockStateChanged;
 
@@ -52,10 +64,10 @@ public class AuthenticationService : IAuthenticationService
         }
 
         // Generate cryptographically random salt
-        _salt = RandomNumberGenerator.GetBytes(SaltSizeBytes);
+        _activeSalt = RandomNumberGenerator.GetBytes(SaltSizeBytes);
 
-        // Derive key verifier using PBKDF2 (HMAC-SHA256)
-        _masterPasswordHash = HashPassword(password, _salt);
+        // Derive key using PBKDF2 (HMAC-SHA256, 100,000 iterations)
+        _activeKey = _encryptionService.DeriveKey(password, _activeSalt);
 
         _isUnlocked = true;
         errorMessage = null;
@@ -78,37 +90,50 @@ public class AuthenticationService : IAuthenticationService
             return false;
         }
 
-        // Hash provided password with stored salt
-        var candidateHash = HashPassword(password, _salt!);
-
-        // Constant-time comparison to prevent timing attacks
-        if (!CryptographicOperations.FixedTimeEquals(candidateHash, _masterPasswordHash!))
+        try
         {
-            errorMessage = "Incorrect master password. Please try again.";
+            // Read vault file header & payload
+            var payload = _vaultStorage.ReadVault();
+
+            // Derive key from input password and stored salt
+            byte[] candidateKey = _encryptionService.DeriveKey(password, payload.Salt);
+
+            // Attempt to decrypt payload to verify authentication tag (AES-GCM integrity check)
+            _encryptionService.Decrypt(payload, candidateKey);
+
+            // Decryption succeeded, master password is authentic!
+            _activeSalt = payload.Salt;
+            _activeKey = candidateKey;
+            _isUnlocked = true;
+            errorMessage = null;
+
+            LockStateChanged?.Invoke();
+            return true;
+        }
+        catch (CryptographicException)
+        {
+            errorMessage = "Incorrect master password or corrupted vault data. Please try again.";
             return false;
         }
-
-        _isUnlocked = true;
-        errorMessage = null;
-
-        LockStateChanged?.Invoke();
-        return true;
+        catch (Exception ex)
+        {
+            errorMessage = $"Failed to open vault: {ex.Message}";
+            return false;
+        }
     }
 
     public void Lock()
     {
-        if (_isUnlocked)
+        if (_isUnlocked || _activeKey != null)
         {
+            if (_activeKey != null)
+            {
+                Array.Clear(_activeKey, 0, _activeKey.Length);
+                _activeKey = null;
+            }
+            _activeSalt = null;
             _isUnlocked = false;
             LockStateChanged?.Invoke();
         }
-    }
-
-    /// <summary>
-    /// Computes a PBKDF2 hash (HMAC-SHA256, 100,000 iterations) of the password with salt.
-    /// </summary>
-    private static byte[] HashPassword(string password, byte[] salt)
-    {
-        return Rfc2898DeriveBytes.Pbkdf2(password, salt, Iterations, HashAlgorithmName.SHA256, HashSizeBytes);
     }
 }

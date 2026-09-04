@@ -2,6 +2,8 @@ using System;
 using System.Windows.Input;
 using PasswordManager.Commands;
 using PasswordManager.Services.Authentication;
+using PasswordManager.Services.Encryption;
+using PasswordManager.Services.Vault;
 using PasswordManager.ViewModels.Base;
 
 namespace PasswordManager.ViewModels;
@@ -31,7 +33,7 @@ public class LoginViewModel : ViewModelBase
     /// <summary>
     /// Parameterless constructor for XAML designer support.
     /// </summary>
-    public LoginViewModel() : this(new AuthenticationService())
+    public LoginViewModel() : this(new AuthenticationService(new FileVaultStorage(), new AesGcmEncryptionService()))
     {
     }
 

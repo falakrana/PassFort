@@ -2,6 +2,7 @@ using System;
 using System.Windows;
 using Microsoft.Extensions.DependencyInjection;
 using PasswordManager.Services.Authentication;
+using PasswordManager.Services.Encryption;
 using PasswordManager.Services.Vault;
 using PasswordManager.ViewModels;
 
@@ -27,6 +28,7 @@ public partial class App : Application
         Tests.MVVMTests.RunAllTests();
         Tests.PasswordCRUDTests.RunAllTests();
         Tests.MasterPasswordTests.RunAllTests();
+        Tests.Phase5EncryptionTests.RunAllTests();
 
         var serviceCollection = new ServiceCollection();
         ConfigureServices(serviceCollection);
@@ -44,9 +46,13 @@ public partial class App : Application
     /// <param name="services">The service collection to register into.</param>
     private static void ConfigureServices(IServiceCollection services)
     {
-        // Services
-        services.AddSingleton<IPasswordService, InMemoryPasswordService>();
+        // Infrastructure Services
+        services.AddSingleton<IEncryptionService, AesGcmEncryptionService>();
+        services.AddSingleton<IVaultStorage, FileVaultStorage>();
+
+        // Domain Services
         services.AddSingleton<IAuthenticationService, AuthenticationService>();
+        services.AddSingleton<IPasswordService, EncryptedPasswordService>();
 
         // ViewModels
         services.AddTransient<MainViewModel>();

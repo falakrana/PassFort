@@ -1,7 +1,9 @@
 using System;
+using System.IO;
 using System.Linq;
 using PasswordManager.Models;
 using PasswordManager.Services.Authentication;
+using PasswordManager.Services.Encryption;
 using PasswordManager.Services.Vault;
 using PasswordManager.ViewModels;
 
@@ -20,11 +22,22 @@ public static class PasswordCRUDTests
         Console.WriteLine("[Tests] All Phase 3 Password CRUD tests passed successfully!");
     }
 
-    private static IAuthenticationService CreateUnlockedAuthService()
+    private static (IAuthenticationService authService, string tempFile) CreateUnlockedAuthService()
     {
-        var authService = new AuthenticationService();
+        string tempFile = Path.Combine(Path.GetTempPath(), $"crud_test_{Guid.NewGuid():N}.dat");
+        var storage = new FileVaultStorage(tempFile);
+        var encryptionService = new AesGcmEncryptionService();
+        var authService = new AuthenticationService(storage, encryptionService);
         authService.InitializeMasterPassword("TestMasterPassword123!", "TestMasterPassword123!", out _);
-        return authService;
+        return (authService, tempFile);
+    }
+
+    private static void CleanupTempFile(string tempFile)
+    {
+        if (File.Exists(tempFile))
+        {
+            try { File.Delete(tempFile); } catch { }
+        }
     }
 
     private static void TestInMemoryPasswordServiceCRUD()
@@ -79,84 +92,104 @@ public static class PasswordCRUDTests
 
     private static void TestMainViewModelCRUDCommands()
     {
-        IPasswordService service = new InMemoryPasswordService();
-        IAuthenticationService authService = CreateUnlockedAuthService();
-        var vm = new MainViewModel(service, authService);
-
-        // Initial selection
-        if (vm.SelectedEntry == null)
+        var (authService, tempFile) = CreateUnlockedAuthService();
+        try
         {
-            throw new Exception("MainViewModel should automatically select the first entry on load.");
+            var encryptionService = new AesGcmEncryptionService();
+            var storage = new FileVaultStorage(tempFile);
+            IPasswordService service = new EncryptedPasswordService(authService, encryptionService, storage);
+            var vm = new MainViewModel(service, authService);
+
+            // Initial selection
+            if (vm.SelectedEntry == null)
+            {
+                throw new Exception("MainViewModel should automatically select the first entry on load.");
+            }
+
+            int initialCount = vm.PasswordEntries.Count;
+
+            // Add New
+            vm.AddNewCommand.Execute(null);
+            if (!vm.IsAdding || vm.EditingEntry == null)
+            {
+                throw new Exception("AddNewCommand failed to transition into IsAdding mode.");
+            }
+
+            vm.EditingEntry.Title = "New Bank Password";
+            vm.EditingEntry.Username = "bank_user";
+            vm.EditingEntry.Password = "BankPass789!";
+            vm.SaveCommand.Execute(null);
+
+            if (vm.IsAdding || vm.PasswordEntries.Count != initialCount + 1)
+            {
+                throw new Exception("SaveCommand failed to save new entry and exit adding mode.");
+            }
+
+            if (vm.SelectedEntry?.Title != "New Bank Password")
+            {
+                throw new Exception("SaveCommand should select the newly created entry.");
+            }
+
+            // Edit
+            vm.EditCommand.Execute(null);
+            if (!vm.IsEditing || vm.EditingEntry == null)
+            {
+                throw new Exception("EditCommand failed to transition into IsEditing mode.");
+            }
+
+            vm.EditingEntry.Title = "Updated Bank Password";
+            vm.SaveCommand.Execute(null);
+
+            if (vm.SelectedEntry?.Title != "Updated Bank Password")
+            {
+                throw new Exception("SaveCommand failed to update existing entry title.");
+            }
+
+            // Delete
+            var entryToDelete = vm.SelectedEntry;
+            vm.DeleteCommand.Execute(null);
+
+            if (vm.PasswordEntries.Any(e => e.Id == entryToDelete.Id))
+            {
+                throw new Exception("DeleteCommand failed to remove selected entry.");
+            }
         }
-
-        // Add New
-        vm.AddNewCommand.Execute(null);
-        if (!vm.IsAdding || vm.EditingEntry == null)
+        finally
         {
-            throw new Exception("AddNewCommand failed to transition into IsAdding mode.");
-        }
-
-        vm.EditingEntry.Title = "New Bank Password";
-        vm.EditingEntry.Username = "bank_user";
-        vm.EditingEntry.Password = "BankPass789!";
-        vm.SaveCommand.Execute(null);
-
-        if (vm.IsAdding || vm.PasswordEntries.Count != 4)
-        {
-            throw new Exception("SaveCommand failed to save new entry and exit adding mode.");
-        }
-
-        if (vm.SelectedEntry?.Title != "New Bank Password")
-        {
-            throw new Exception("SaveCommand should select the newly created entry.");
-        }
-
-        // Edit
-        vm.EditCommand.Execute(null);
-        if (!vm.IsEditing || vm.EditingEntry == null)
-        {
-            throw new Exception("EditCommand failed to transition into IsEditing mode.");
-        }
-
-        vm.EditingEntry.Title = "Updated Bank Password";
-        vm.SaveCommand.Execute(null);
-
-        if (vm.SelectedEntry?.Title != "Updated Bank Password")
-        {
-            throw new Exception("SaveCommand failed to update existing entry title.");
-        }
-
-        // Delete
-        var entryToDelete = vm.SelectedEntry;
-        vm.DeleteCommand.Execute(null);
-
-        if (vm.PasswordEntries.Any(e => e.Id == entryToDelete.Id))
-        {
-            throw new Exception("DeleteCommand failed to remove selected entry.");
+            CleanupTempFile(tempFile);
         }
     }
 
     private static void TestMainViewModelValidation()
     {
-        IPasswordService service = new InMemoryPasswordService();
-        IAuthenticationService authService = CreateUnlockedAuthService();
-        var vm = new MainViewModel(service, authService);
-
-        vm.AddNewCommand.Execute(null);
-        vm.EditingEntry!.Title = ""; // Empty title
-        vm.EditingEntry.Password = "valid_password";
-
-        vm.SaveCommand.Execute(null);
-
-        if (vm.ValidationMessage == null || !vm.IsAdding)
+        var (authService, tempFile) = CreateUnlockedAuthService();
+        try
         {
-            throw new Exception("SaveCommand should prevent saving when Title is empty.");
+            var encryptionService = new AesGcmEncryptionService();
+            var storage = new FileVaultStorage(tempFile);
+            IPasswordService service = new EncryptedPasswordService(authService, encryptionService, storage);
+            var vm = new MainViewModel(service, authService);
+
+            vm.AddNewCommand.Execute(null);
+            vm.EditingEntry!.Title = ""; // Empty title
+            vm.EditingEntry.Password = "valid_password";
+
+            vm.SaveCommand.Execute(null);
+
+            if (vm.ValidationMessage == null || !vm.IsAdding)
+            {
+                throw new Exception("SaveCommand should prevent saving when Title is empty.");
+            }
+
+            vm.CancelCommand.Execute(null);
+            if (vm.IsAdding || vm.ValidationMessage != null)
+            {
+                throw new Exception("CancelCommand should clear edit state and validation messages.");
+            }
         }
-
-        vm.CancelCommand.Execute(null);
-        if (vm.IsAdding || vm.ValidationMessage != null)
+        finally
         {
-            throw new Exception("CancelCommand should clear edit state and validation messages.");
+            CleanupTempFile(tempFile);
         }
     }
 }

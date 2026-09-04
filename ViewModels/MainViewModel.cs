@@ -5,6 +5,7 @@ using System.Windows.Input;
 using PasswordManager.Commands;
 using PasswordManager.Models;
 using PasswordManager.Services.Authentication;
+using PasswordManager.Services.Encryption;
 using PasswordManager.Services.Vault;
 using PasswordManager.ViewModels.Base;
 
@@ -56,7 +57,12 @@ public class MainViewModel : ViewModelBase
     /// <summary>
     /// Parameterless constructor for XAML designer support.
     /// </summary>
-    public MainViewModel() : this(new InMemoryPasswordService(), new AuthenticationService())
+    public MainViewModel() : this(
+        new EncryptedPasswordService(
+            new AuthenticationService(new FileVaultStorage(), new AesGcmEncryptionService()),
+            new AesGcmEncryptionService(),
+            new FileVaultStorage()),
+        new AuthenticationService(new FileVaultStorage(), new AesGcmEncryptionService()))
     {
     }
 

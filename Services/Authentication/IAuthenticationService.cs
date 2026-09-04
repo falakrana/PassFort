@@ -18,6 +18,17 @@ public interface IAuthenticationService
     bool IsUnlocked { get; }
 
     /// <summary>
+    /// Gets the currently active derived 256-bit encryption key when vault is unlocked.
+    /// Returns null when vault is locked.
+    /// </summary>
+    byte[]? ActiveKey { get; }
+
+    /// <summary>
+    /// Gets the active salt associated with the current vault.
+    /// </summary>
+    byte[]? ActiveSalt { get; }
+
+    /// <summary>
     /// Event raised when the vault lock state changes (unlocked or locked).
     /// </summary>
     event Action? LockStateChanged;

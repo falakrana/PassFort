@@ -2,7 +2,7 @@
 
 ## Project Status
 
-**Current Phase:** Phase 4 — Master Password
+**Current Phase:** Phase 5 — Encryption & Persistent Vault
 **Status:** Completed
 **Last Updated:** 2026-09-04
 
@@ -16,7 +16,7 @@
 | Phase 2  | MVVM Foundation               | ✅ Completed  |
 | Phase 3  | Basic Password CRUD           | ✅ Completed  |
 | Phase 4  | Master Password               | ✅ Completed  |
-| Phase 5  | Encryption & Persistent Vault | ⬜ Not Started |
+| Phase 5  | Encryption & Persistent Vault | ✅ Completed  |
 | Phase 6  | Search & Categories           | ⬜ Not Started |
 | Phase 7  | Password Generator            | ⬜ Not Started |
 | Phase 8  | Clipboard Security            | ⬜ Not Started |
@@ -141,30 +141,30 @@ Encryption and persistent storage are intentionally postponed until Phase 5.
 
 # Phase 5 — Encryption & Persistent Vault
 
-**Status:** ⬜ Not Started
+**Status:** ✅ Completed
 
 ### Tasks
 
-* [ ] Design vault file format
-* [ ] Add vault versioning
-* [ ] Generate cryptographic salt
-* [ ] Implement password-based key derivation
-* [ ] Implement AES-GCM encryption
-* [ ] Implement AES-GCM decryption
-* [ ] Generate unique nonce per encryption
-* [ ] Store authentication tag
-* [ ] Detect tampering/corruption
-* [ ] Implement encrypted file storage
-* [ ] Replace temporary storage
-* [ ] Test save/load cycle
+* [x] Design vault file format
+* [x] Add vault versioning
+* [x] Generate cryptographic salt
+* [x] Implement password-based key derivation
+* [x] Implement AES-GCM encryption
+* [x] Implement AES-GCM decryption
+* [x] Generate unique nonce per encryption
+* [x] Store authentication tag
+* [x] Detect tampering/corruption
+* [x] Implement encrypted file storage
+* [x] Replace temporary storage
+* [x] Test save/load cycle
 
 ### Security Review
 
-* [ ] No plaintext vault on disk
-* [ ] No encryption keys logged
-* [ ] No sensitive data in exceptions
-* [ ] Cryptographic parameters documented
-* [ ] Encryption/decryption tests pass
+* [x] No plaintext vault on disk
+* [x] No encryption keys logged
+* [x] No sensitive data in exceptions
+* [x] Cryptographic parameters documented
+* [x] Encryption/decryption tests pass
 
 ---
 

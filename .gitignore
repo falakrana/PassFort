@@ -1,0 +1,24 @@
+## Build & Binaries
+bin/
+obj/
+[Dd]ebug/
+[Rr]elease/
+
+## Visual Studio / IDE Files
+.vs/
+.vscode/
+*.user
+*.userosscache
+*.sln.docstates
+*.suo
+
+## User-specific files
+*.rsuser
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+## OS Generated Files
+.DS_Store
+Thumbs.db

@@ -3,16 +3,140 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:local="clr-namespace:PasswordManager"
+        xmlns:vm="clr-namespace:PasswordManager.ViewModels"
         mc:Ignorable="d"
-        Title="Secure Password Manager" Height="600" Width="900"
-        WindowStartupLocation="CenterScreen">
-    <Grid Background="#F5F5F7">
-        <TextBlock Text="🔐 Secure Password Manager — Initializing Foundation" 
-                   HorizontalAlignment="Center" 
-                   VerticalAlignment="Center" 
-                   FontSize="18" 
-                   FontWeight="SemiBold" 
-                   Foreground="#333333"/>
+        Title="{Binding Title}" Height="550" Width="850"
+        WindowStartupLocation="CenterScreen"
+        d:DataContext="{d:DesignInstance Type=vm:MainViewModel, IsDesignTimeCreatable=True}">
+    
+    <Window.Resources>
+        <!-- Modern Button Style -->
+        <Style x:Key="PrimaryButtonStyle" TargetType="Button">
+            <Setter Property="Background" Value="#2563EB"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Padding" Value="16,10"/>
+            <Setter Property="Margin" Value="5"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}" 
+                                CornerRadius="6" 
+                                Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="Background" Value="#1D4ED8"/>
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter Property="Background" Value="#9CA3AF"/>
+                                <Setter Property="Foreground" Value="#F3F4F6"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="SecondaryButtonStyle" TargetType="Button" BasedOn="{StaticResource PrimaryButtonStyle}">
+            <Setter Property="Background" Value="#DC2626"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}" 
+                                CornerRadius="6" 
+                                Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="Background" Value="#B91C1C"/>
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter Property="Background" Value="#E5E7EB"/>
+                                <Setter Property="Foreground" Value="#9CA3AF"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </Window.Resources>
+
+    <Grid Background="#F8FAFC">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <!-- Header -->
+        <Border Grid.Row="0" Background="#1E293B" Padding="20,15">
+            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                <TextBlock Text="🔐 " FontSize="22"/>
+                <TextBlock Text="{Binding Title}" 
+                           Foreground="White" 
+                           FontSize="18" 
+                           FontWeight="Bold" 
+                           VerticalAlignment="Center"/>
+            </StackPanel>
+        </Border>
+
+        <!-- Main Body / MVVM Verification Card -->
+        <Border Grid.Row="1" 
+                Background="White" 
+                Margin="30" 
+                CornerRadius="12" 
+                Padding="30">
+            <Border.Effect>
+                <DropShadowEffect BlurRadius="15" ShadowDepth="2" Direction="270" Color="#CCCCCC" Opacity="0.4"/>
+            </Border.Effect>
+
+            <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
+                <TextBlock Text="Phase 2 — MVVM Foundation" 
+                           FontSize="22" 
+                           FontWeight="Bold" 
+                           Foreground="#0F172A" 
+                           HorizontalAlignment="Center" 
+                           Margin="0,0,0,10"/>
+
+                <TextBlock Text="INotifyPropertyChanged &amp; RelayCommand Verification" 
+                           FontSize="14" 
+                           Foreground="#64748B" 
+                           HorizontalAlignment="Center" 
+                           Margin="0,0,0,25"/>
+
+                <!-- Counter Display -->
+                <Border Background="#F1F5F9" CornerRadius="8" Padding="20,15" Margin="0,0,0,20">
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                        <TextBlock Text="Counter Value: " FontSize="16" FontWeight="SemiBold" Foreground="#334155"/>
+                        <TextBlock Text="{Binding Counter}" FontSize="18" FontWeight="Bold" Foreground="#2563EB"/>
+                    </StackPanel>
+                </Border>
+
+                <!-- Interactive Buttons Bound to RelayCommands -->
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                    <Button Content="Increment Counter" 
+                            Command="{Binding IncrementCounterCommand}" 
+                            Style="{StaticResource PrimaryButtonStyle}"/>
+
+                    <Button Content="Reset Counter" 
+                            Command="{Binding ResetCounterCommand}" 
+                            Style="{StaticResource SecondaryButtonStyle}"/>
+                </StackPanel>
+            </StackPanel>
+        </Border>
+
+        <!-- Footer / Status Bar -->
+        <Border Grid.Row="2" Background="#E2E8F0" Padding="15,10">
+            <DockPanel>
+                <TextBlock Text="Status: " FontWeight="SemiBold" Foreground="#475569"/>
+                <TextBlock Text="{Binding StatusMessage}" Foreground="#1E293B"/>
+            </DockPanel>
+        </Border>
     </Grid>
 </Window>

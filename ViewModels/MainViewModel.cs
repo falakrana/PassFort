@@ -9,18 +9,20 @@ using PasswordManager.Commands;
 using PasswordManager.Models;
 using PasswordManager.Services.Authentication;
 using PasswordManager.Services.Encryption;
+using PasswordManager.Services.PasswordGenerator;
 using PasswordManager.Services.Vault;
 using PasswordManager.ViewModels.Base;
 
 namespace PasswordManager.ViewModels;
 
 /// <summary>
-/// Main window ViewModel coordinating password entries CRUD, selection, search & category filtering, and vault state.
+/// Main window ViewModel coordinating password entries CRUD, selection, search & category filtering, password generation, and vault state.
 /// </summary>
 public class MainViewModel : ViewModelBase
 {
     private readonly IPasswordService _passwordService;
     private readonly IAuthenticationService _authService;
+    private readonly IPasswordGeneratorService _generatorService;
 
     private string _title = "Secure Password Manager — Vault";
     private string _statusMessage = "Ready";
@@ -35,13 +37,19 @@ public class MainViewModel : ViewModelBase
     private string _selectedCategoryFilter = "All";
     private readonly ICollectionView _filteredEntries;
 
-    public MainViewModel(IPasswordService passwordService, IAuthenticationService authService)
+    public MainViewModel(
+        IPasswordService passwordService,
+        IAuthenticationService authService,
+        IPasswordGeneratorService? generatorService = null)
     {
         _passwordService = passwordService ?? throw new ArgumentNullException(nameof(passwordService));
         _authService = authService ?? throw new ArgumentNullException(nameof(authService));
+        _generatorService = generatorService ?? new PasswordGeneratorService();
 
         LoginViewModel = new LoginViewModel(_authService);
         LoginViewModel.Authenticated += OnAuthenticated;
+
+        PasswordGeneratorViewModel = new PasswordGeneratorViewModel(_generatorService);
 
         _authService.LockStateChanged += OnLockStateChanged;
 
@@ -57,6 +65,7 @@ public class MainViewModel : ViewModelBase
         TogglePasswordVisibilityCommand = new RelayCommand(ExecuteTogglePasswordVisibility, CanExecuteTogglePasswordVisibility);
         LockCommand = new RelayCommand(ExecuteLock, CanExecuteLock);
         ClearSearchCommand = new RelayCommand(ExecuteClearSearch, CanExecuteClearSearch);
+        GeneratePasswordForEntryCommand = new RelayCommand(ExecuteGeneratePasswordForEntry, CanExecuteGeneratePasswordForEntry);
 
         if (IsVaultUnlocked)
         {
@@ -72,11 +81,14 @@ public class MainViewModel : ViewModelBase
             new AuthenticationService(new FileVaultStorage(), new AesGcmEncryptionService()),
             new AesGcmEncryptionService(),
             new FileVaultStorage()),
-        new AuthenticationService(new FileVaultStorage(), new AesGcmEncryptionService()))
+        new AuthenticationService(new FileVaultStorage(), new AesGcmEncryptionService()),
+        new PasswordGeneratorService())
     {
     }
 
     public LoginViewModel LoginViewModel { get; }
+
+    public PasswordGeneratorViewModel PasswordGeneratorViewModel { get; }
 
     public bool IsVaultUnlocked => _authService.IsUnlocked;
 
@@ -193,6 +205,7 @@ public class MainViewModel : ViewModelBase
     public ICommand TogglePasswordVisibilityCommand { get; }
     public ICommand LockCommand { get; }
     public ICommand ClearSearchCommand { get; }
+    public ICommand GeneratePasswordForEntryCommand { get; }
 
     public void LoadEntries()
     {
@@ -316,6 +329,23 @@ public class MainViewModel : ViewModelBase
 
     private bool CanExecuteEdit() => IsVaultUnlocked && SelectedEntry != null && !IsAdding && !IsEditing;
 
+    private bool CanExecuteGeneratePasswordForEntry() => IsVaultUnlocked && (IsAdding || IsEditing) && EditingEntry != null;
+
+    private void ExecuteGeneratePasswordForEntry()
+    {
+        if (EditingEntry == null) return;
+
+        if (PasswordGeneratorViewModel.GeneratePassword())
+        {
+            EditingEntry.Password = PasswordGeneratorViewModel.GeneratedPassword;
+            StatusMessage = "Generated new secure password.";
+        }
+        else
+        {
+            StatusMessage = PasswordGeneratorViewModel.ValidationMessage ?? "Failed to generate password.";
+        }
+    }
+
     private void ExecuteSave()
     {
         if (EditingEntry == null) return;
@@ -396,4 +426,3 @@ public class MainViewModel : ViewModelBase
         CommandManager.InvalidateRequerySuggested();
     }
 }
-

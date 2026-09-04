@@ -3,6 +3,7 @@ using System.Windows;
 using Microsoft.Extensions.DependencyInjection;
 using PasswordManager.Services.Authentication;
 using PasswordManager.Services.Encryption;
+using PasswordManager.Services.PasswordGenerator;
 using PasswordManager.Services.Vault;
 using PasswordManager.ViewModels;
 
@@ -30,6 +31,7 @@ public partial class App : Application
         Tests.MasterPasswordTests.RunAllTests();
         Tests.Phase5EncryptionTests.RunAllTests();
         Tests.Phase6SearchAndCategoryTests.RunAllTests();
+        Tests.Phase7PasswordGeneratorTests.RunAllTests();
 
         var serviceCollection = new ServiceCollection();
         ConfigureServices(serviceCollection);
@@ -54,8 +56,10 @@ public partial class App : Application
         // Domain Services
         services.AddSingleton<IAuthenticationService, AuthenticationService>();
         services.AddSingleton<IPasswordService, EncryptedPasswordService>();
+        services.AddSingleton<IPasswordGeneratorService, PasswordGeneratorService>();
 
         // ViewModels
+        services.AddTransient<PasswordGeneratorViewModel>();
         services.AddTransient<MainViewModel>();
 
         // Views

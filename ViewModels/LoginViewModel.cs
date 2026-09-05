@@ -19,6 +19,9 @@ public class LoginViewModel : ViewModelBase
     private string _confirmPassword = string.Empty;
     private string? _errorMessage;
     private string? _validationMessage;
+    private bool _isBusy;
+    private string _busyMessage = "Processing...";
+    private bool _isPasswordVisible;
 
     public event Action? Authenticated;
 
@@ -28,6 +31,7 @@ public class LoginViewModel : ViewModelBase
 
         SetupCommand = new RelayCommand(ExecuteSetup, CanExecuteSetup);
         UnlockCommand = new RelayCommand(ExecuteUnlock, CanExecuteUnlock);
+        TogglePasswordVisibilityCommand = new RelayCommand(ExecuteTogglePasswordVisibility);
     }
 
     /// <summary>
@@ -83,8 +87,27 @@ public class LoginViewModel : ViewModelBase
         set => SetProperty(ref _validationMessage, value);
     }
 
+    public bool IsBusy
+    {
+        get => _isBusy;
+        set => SetProperty(ref _isBusy, value);
+    }
+
+    public string BusyMessage
+    {
+        get => _busyMessage;
+        set => SetProperty(ref _busyMessage, value);
+    }
+
+    public bool IsPasswordVisible
+    {
+        get => _isPasswordVisible;
+        set => SetProperty(ref _isPasswordVisible, value);
+    }
+
     public ICommand SetupCommand { get; }
     public ICommand UnlockCommand { get; }
+    public ICommand TogglePasswordVisibilityCommand { get; }
 
     public void RefreshState()
     {
@@ -92,6 +115,8 @@ public class LoginViewModel : ViewModelBase
         ConfirmPassword = string.Empty;
         ErrorMessage = null;
         ValidationMessage = null;
+        IsBusy = false;
+        IsPasswordVisible = false;
         OnPropertyChanged(nameof(IsFirstRun));
         OnPropertyChanged(nameof(Title));
         OnPropertyChanged(nameof(Subtitle));
@@ -99,43 +124,66 @@ public class LoginViewModel : ViewModelBase
 
     private void ExecuteSetup()
     {
-        if (_authService.InitializeMasterPassword(Password, ConfirmPassword, out var error))
+        IsBusy = true;
+        BusyMessage = "Setting up vault...";
+        try
         {
-            Password = string.Empty;
-            ConfirmPassword = string.Empty;
-            ErrorMessage = null;
-            ValidationMessage = null;
-            Authenticated?.Invoke();
+            if (_authService.InitializeMasterPassword(Password, ConfirmPassword, out var error))
+            {
+                Password = string.Empty;
+                ConfirmPassword = string.Empty;
+                ErrorMessage = null;
+                ValidationMessage = null;
+                Authenticated?.Invoke();
+            }
+            else
+            {
+                ErrorMessage = error;
+            }
         }
-        else
+        finally
         {
-            ErrorMessage = error;
+            IsBusy = false;
         }
     }
 
     private bool CanExecuteSetup()
     {
-        return IsFirstRun && !string.IsNullOrWhiteSpace(Password) && !string.IsNullOrWhiteSpace(ConfirmPassword);
+        return IsFirstRun && !IsBusy && !string.IsNullOrWhiteSpace(Password) && !string.IsNullOrWhiteSpace(ConfirmPassword);
     }
 
     private void ExecuteUnlock()
     {
-        if (_authService.Unlock(Password, out var error))
+        IsBusy = true;
+        BusyMessage = "Unlocking vault...";
+        try
         {
-            Password = string.Empty;
-            ConfirmPassword = string.Empty;
-            ErrorMessage = null;
-            ValidationMessage = null;
-            Authenticated?.Invoke();
+            if (_authService.Unlock(Password, out var error))
+            {
+                Password = string.Empty;
+                ConfirmPassword = string.Empty;
+                ErrorMessage = null;
+                ValidationMessage = null;
+                Authenticated?.Invoke();
+            }
+            else
+            {
+                ErrorMessage = error;
+            }
         }
-        else
+        finally
         {
-            ErrorMessage = error;
+            IsBusy = false;
         }
     }
 
     private bool CanExecuteUnlock()
     {
-        return !IsFirstRun && !string.IsNullOrWhiteSpace(Password);
+        return !IsFirstRun && !IsBusy && !string.IsNullOrWhiteSpace(Password);
+    }
+
+    private void ExecuteTogglePasswordVisibility()
+    {
+        IsPasswordVisible = !IsPasswordVisible;
     }
 }

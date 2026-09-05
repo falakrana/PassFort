@@ -7,7 +7,7 @@
         xmlns:views="clr-namespace:PasswordManager.Views"
         xmlns:helpers="clr-namespace:PasswordManager.Helpers"
         mc:Ignorable="d"
-        Title="{Binding Title}" Height="650" Width="950"
+        Title="{Binding Title}" Height="680" Width="980"
         WindowStartupLocation="CenterScreen"
         d:DataContext="{d:DesignInstance Type=vm:MainViewModel, IsDesignTimeCreatable=True}">
 
@@ -15,6 +15,14 @@
         <BooleanToVisibilityConverter x:Key="BoolToVis"/>
         <helpers:InverseBooleanToVisibilityConverter x:Key="InvBoolToVis"/>
     </Window.Resources>
+
+    <!-- Global Keyboard Accessibility Shortcuts -->
+    <Window.InputBindings>
+        <KeyBinding Key="N" Modifiers="Control" Command="{Binding AddNewCommand}" />
+        <KeyBinding Key="F" Modifiers="Control" Command="{Binding ClearSearchCommand}" />
+        <KeyBinding Key="L" Modifiers="Control" Command="{Binding LockCommand}" />
+        <KeyBinding Key="Escape" Command="{Binding CancelCommand}" />
+    </Window.InputBindings>
 
     <Grid>
         <!-- LOGIN / SETUP VIEW (Visible when Vault is Locked) -->

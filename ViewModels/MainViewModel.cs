@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
+using System.Windows;
 using System.Windows.Data;
 using System.Windows.Input;
 using PasswordManager.Commands;
@@ -12,6 +13,7 @@ using PasswordManager.Services.AutoLock;
 using PasswordManager.Services.Clipboard;
 using PasswordManager.Services.Encryption;
 using PasswordManager.Services.PasswordGenerator;
+using PasswordManager.Services.UI;
 using PasswordManager.Services.Vault;
 using PasswordManager.ViewModels.Base;
 
@@ -27,6 +29,7 @@ public class MainViewModel : ViewModelBase
     private readonly IPasswordGeneratorService _generatorService;
     private readonly IClipboardService _clipboardService;
     private readonly IAutoLockService _autoLockService;
+    private readonly IDialogService _dialogService;
 
     private string _title = "Secure Password Manager — Vault";
     private string _statusMessage = "Ready";
@@ -35,24 +38,30 @@ public class MainViewModel : ViewModelBase
     private bool _isEditing;
     private bool _isAdding;
     private bool _isPasswordVisible;
+    private bool _isEditingPasswordVisible;
     private string? _validationMessage;
+    private bool _isBusy;
+    private string _busyMessage = "Processing...";
 
     private string _searchText = string.Empty;
     private string _selectedCategoryFilter = "All";
     private readonly ICollectionView _filteredEntries;
+    private readonly object _entriesLock = new();
 
     public MainViewModel(
         IPasswordService passwordService,
         IAuthenticationService authService,
         IPasswordGeneratorService? generatorService = null,
         IClipboardService? clipboardService = null,
-        IAutoLockService? autoLockService = null)
+        IAutoLockService? autoLockService = null,
+        IDialogService? dialogService = null)
     {
         _passwordService = passwordService ?? throw new ArgumentNullException(nameof(passwordService));
         _authService = authService ?? throw new ArgumentNullException(nameof(authService));
         _generatorService = generatorService ?? new PasswordGeneratorService();
         _clipboardService = clipboardService ?? new ClipboardService();
         _autoLockService = autoLockService ?? new AutoLockService(_authService);
+        _dialogService = dialogService ?? new DialogService();
 
         LoginViewModel = new LoginViewModel(_authService);
         LoginViewModel.Authenticated += OnAuthenticated;
@@ -64,6 +73,7 @@ public class MainViewModel : ViewModelBase
         _autoLockService.AutoLocked += OnAutoLocked;
 
         PasswordEntries = new ObservableCollection<PasswordEntry>();
+        BindingOperations.EnableCollectionSynchronization(PasswordEntries, _entriesLock);
         _filteredEntries = CollectionViewSource.GetDefaultView(PasswordEntries);
         _filteredEntries.Filter = FilterPasswordEntry;
 
@@ -73,6 +83,7 @@ public class MainViewModel : ViewModelBase
         CancelCommand = new RelayCommand(ExecuteCancel, CanExecuteCancel);
         DeleteCommand = new RelayCommand(ExecuteDelete, CanExecuteDelete);
         TogglePasswordVisibilityCommand = new RelayCommand(ExecuteTogglePasswordVisibility, CanExecuteTogglePasswordVisibility);
+        ToggleEditingPasswordVisibilityCommand = new RelayCommand(ExecuteToggleEditingPasswordVisibility);
         LockCommand = new RelayCommand(ExecuteLock, CanExecuteLock);
         ClearSearchCommand = new RelayCommand(ExecuteClearSearch, CanExecuteClearSearch);
         GeneratePasswordForEntryCommand = new RelayCommand(ExecuteGeneratePasswordForEntry, CanExecuteGeneratePasswordForEntry);
@@ -96,7 +107,8 @@ public class MainViewModel : ViewModelBase
         new AuthenticationService(new FileVaultStorage(), new AesGcmEncryptionService()),
         new PasswordGeneratorService(),
         new ClipboardService(),
-        new AutoLockService(new AuthenticationService(new FileVaultStorage(), new AesGcmEncryptionService())))
+        new AutoLockService(new AuthenticationService(new FileVaultStorage(), new AesGcmEncryptionService())),
+        new DialogService())
     {
     }
 
@@ -118,6 +130,18 @@ public class MainViewModel : ViewModelBase
         set => SetProperty(ref _statusMessage, value);
     }
 
+    public bool IsBusy
+    {
+        get => _isBusy;
+        set => SetProperty(ref _isBusy, value);
+    }
+
+    public string BusyMessage
+    {
+        get => _busyMessage;
+        set => SetProperty(ref _busyMessage, value);
+    }
+
     public ObservableCollection<PasswordEntry> PasswordEntries { get; }
 
     public ICollectionView FilteredEntries => _filteredEntries;
@@ -125,6 +149,16 @@ public class MainViewModel : ViewModelBase
     public List<string> CategoriesFilterList => Category.FilterCategories;
 
     public List<string> CategoriesList => Category.StandardCategories;
+
+    public int TotalEntriesCount => PasswordEntries.Count;
+
+    public int FilteredEntriesCount => FilteredEntries.Cast<PasswordEntry>().Count();
+
+    public bool IsEmptyVault => IsVaultUnlocked && PasswordEntries.Count == 0;
+
+    public bool IsSearchEmpty => IsVaultUnlocked && PasswordEntries.Count > 0 && FilteredEntriesCount == 0;
+
+    public bool HasEntries => IsVaultUnlocked && FilteredEntriesCount > 0;
 
     public string SearchText
     {
@@ -134,6 +168,7 @@ public class MainViewModel : ViewModelBase
             if (SetProperty(ref _searchText, value))
             {
                 _filteredEntries.Refresh();
+                NotifyEmptyStateProperties();
                 InvalidateCommandStates();
             }
         }
@@ -147,6 +182,7 @@ public class MainViewModel : ViewModelBase
             if (SetProperty(ref _selectedCategoryFilter, value))
             {
                 _filteredEntries.Refresh();
+                NotifyEmptyStateProperties();
                 InvalidateCommandStates();
             }
         }
@@ -205,6 +241,12 @@ public class MainViewModel : ViewModelBase
         set => SetProperty(ref _isPasswordVisible, value);
     }
 
+    public bool IsEditingPasswordVisible
+    {
+        get => _isEditingPasswordVisible;
+        set => SetProperty(ref _isEditingPasswordVisible, value);
+    }
+
     public string? ValidationMessage
     {
         get => _validationMessage;
@@ -217,6 +259,7 @@ public class MainViewModel : ViewModelBase
     public ICommand CancelCommand { get; }
     public ICommand DeleteCommand { get; }
     public ICommand TogglePasswordVisibilityCommand { get; }
+    public ICommand ToggleEditingPasswordVisibilityCommand { get; }
     public ICommand LockCommand { get; }
     public ICommand ClearSearchCommand { get; }
     public ICommand GeneratePasswordForEntryCommand { get; }
@@ -225,19 +268,38 @@ public class MainViewModel : ViewModelBase
 
     public void LoadEntries()
     {
-        PasswordEntries.Clear();
-        var entries = _passwordService.GetAll();
-        foreach (var entry in entries)
+        IsBusy = true;
+        BusyMessage = "Loading vault entries...";
+        try
         {
-            PasswordEntries.Add(entry);
+            PasswordEntries.Clear();
+            var entries = _passwordService.GetAll();
+            foreach (var entry in entries)
+            {
+                PasswordEntries.Add(entry);
+            }
+
+            _filteredEntries.Refresh();
+            NotifyEmptyStateProperties();
+
+            if (_filteredEntries.Cast<PasswordEntry>().Any() && SelectedEntry == null)
+            {
+                SelectedEntry = _filteredEntries.Cast<PasswordEntry>().First();
+            }
         }
-
-        _filteredEntries.Refresh();
-
-        if (_filteredEntries.Cast<PasswordEntry>().Any() && SelectedEntry == null)
+        finally
         {
-            SelectedEntry = _filteredEntries.Cast<PasswordEntry>().First();
+            IsBusy = false;
         }
+    }
+
+    private void NotifyEmptyStateProperties()
+    {
+        OnPropertyChanged(nameof(TotalEntriesCount));
+        OnPropertyChanged(nameof(FilteredEntriesCount));
+        OnPropertyChanged(nameof(IsEmptyVault));
+        OnPropertyChanged(nameof(IsSearchEmpty));
+        OnPropertyChanged(nameof(HasEntries));
     }
 
     private bool FilterPasswordEntry(object item)
@@ -291,21 +353,39 @@ public class MainViewModel : ViewModelBase
 
     private void OnLockStateChanged()
     {
-        OnPropertyChanged(nameof(IsVaultUnlocked));
-        if (!IsVaultUnlocked)
+        void ClearState()
         {
-            _clipboardService.ClearClipboard();
-            SelectedEntry = null;
-            EditingEntry = null;
-            IsAdding = false;
-            IsEditing = false;
-            IsPasswordVisible = false;
-            SearchText = string.Empty;
-            SelectedCategoryFilter = "All";
-            PasswordEntries.Clear();
-            _filteredEntries.Refresh();
-            LoginViewModel.RefreshState();
-            StatusMessage = "Vault locked.";
+            OnPropertyChanged(nameof(IsVaultUnlocked));
+            if (!IsVaultUnlocked)
+            {
+                _clipboardService.ClearClipboard();
+                _selectedEntry = null;
+                OnPropertyChanged(nameof(SelectedEntry));
+                EditingEntry = null;
+                IsAdding = false;
+                IsEditing = false;
+                IsPasswordVisible = false;
+                IsEditingPasswordVisible = false;
+                SearchText = string.Empty;
+                SelectedCategoryFilter = "All";
+                lock (_entriesLock)
+                {
+                    PasswordEntries.Clear();
+                }
+                _filteredEntries.Refresh();
+                NotifyEmptyStateProperties();
+                LoginViewModel.RefreshState();
+                StatusMessage = "Vault locked.";
+            }
+        }
+
+        if (Application.Current?.Dispatcher is { } dispatcher && !dispatcher.CheckAccess())
+        {
+            dispatcher.Invoke(ClearState);
+        }
+        else
+        {
+            ClearState();
         }
     }
 
@@ -373,6 +453,7 @@ public class MainViewModel : ViewModelBase
             Category = "General"
         };
         ValidationMessage = null;
+        IsEditingPasswordVisible = false;
         IsAdding = true;
         IsEditing = false;
         StatusMessage = "Adding new password entry...";
@@ -386,6 +467,7 @@ public class MainViewModel : ViewModelBase
 
         EditingEntry = SelectedEntry.Clone();
         ValidationMessage = null;
+        IsEditingPasswordVisible = false;
         IsEditing = true;
         IsAdding = false;
         StatusMessage = $"Editing '{SelectedEntry.Title}'...";
@@ -428,26 +510,35 @@ public class MainViewModel : ViewModelBase
         }
 
         ValidationMessage = null;
+        IsBusy = true;
+        BusyMessage = "Saving entry...";
 
-        if (IsAdding)
+        try
         {
-            _passwordService.Add(EditingEntry);
-            StatusMessage = $"Added new entry: '{EditingEntry.Title}'";
+            if (IsAdding)
+            {
+                _passwordService.Add(EditingEntry);
+                StatusMessage = $"Added new entry: '{EditingEntry.Title}'";
+            }
+            else if (IsEditing)
+            {
+                _passwordService.Update(EditingEntry);
+                StatusMessage = $"Updated entry: '{EditingEntry.Title}'";
+            }
+
+            var savedId = EditingEntry.Id;
+            IsAdding = false;
+            IsEditing = false;
+            EditingEntry = null;
+
+            LoadEntries();
+
+            SelectedEntry = PasswordEntries.FirstOrDefault(e => e.Id == savedId);
         }
-        else if (IsEditing)
+        finally
         {
-            _passwordService.Update(EditingEntry);
-            StatusMessage = $"Updated entry: '{EditingEntry.Title}'";
+            IsBusy = false;
         }
-
-        var savedId = EditingEntry.Id;
-        IsAdding = false;
-        IsEditing = false;
-        EditingEntry = null;
-
-        LoadEntries();
-
-        SelectedEntry = PasswordEntries.FirstOrDefault(e => e.Id == savedId);
     }
 
     private bool CanExecuteSave() => IsVaultUnlocked && (IsAdding || IsEditing) && EditingEntry != null;
@@ -458,6 +549,7 @@ public class MainViewModel : ViewModelBase
         IsEditing = false;
         EditingEntry = null;
         ValidationMessage = null;
+        IsEditingPasswordVisible = false;
         StatusMessage = SelectedEntry != null ? $"Selected: {SelectedEntry.Title}" : "Ready";
     }
 
@@ -467,13 +559,28 @@ public class MainViewModel : ViewModelBase
     {
         if (SelectedEntry == null) return;
 
-        var deletedTitle = SelectedEntry.Title;
-        _passwordService.Delete(SelectedEntry.Id);
+        var confirmed = _dialogService.ShowConfirmation(
+            "Delete Password Entry",
+            $"Are you sure you want to permanently delete '{SelectedEntry.Title}'?");
 
-        StatusMessage = $"Deleted entry: '{deletedTitle}'";
-        SelectedEntry = null;
+        if (!confirmed) return;
 
-        LoadEntries();
+        IsBusy = true;
+        BusyMessage = "Deleting entry...";
+        try
+        {
+            var deletedTitle = SelectedEntry.Title;
+            _passwordService.Delete(SelectedEntry.Id);
+
+            StatusMessage = $"Deleted entry: '{deletedTitle}'";
+            SelectedEntry = null;
+
+            LoadEntries();
+        }
+        finally
+        {
+            IsBusy = false;
+        }
     }
 
     private bool CanExecuteDelete() => IsVaultUnlocked && SelectedEntry != null && !IsAdding && !IsEditing;
@@ -485,9 +592,13 @@ public class MainViewModel : ViewModelBase
 
     private bool CanExecuteTogglePasswordVisibility() => IsVaultUnlocked && (SelectedEntry != null || EditingEntry != null);
 
+    private void ExecuteToggleEditingPasswordVisibility()
+    {
+        IsEditingPasswordVisible = !IsEditingPasswordVisible;
+    }
+
     private void InvalidateCommandStates()
     {
         CommandManager.InvalidateRequerySuggested();
     }
 }
-

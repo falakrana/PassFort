@@ -10,17 +10,17 @@
 
 # Development Roadmap
 
-| Phase    | Description                   | Status        |
-| -------- | ----------------------------- | ------------- |
-| Phase 1  | Project Foundation            | ✅ Completed  |
-| Phase 2  | MVVM Foundation               | ✅ Completed  |
-| Phase 3  | Basic Password CRUD           | ✅ Completed  |
-| Phase 4  | Master Password               | ✅ Completed  |
-| Phase 5  | Encryption & Persistent Vault | ✅ Completed  |
-| Phase 6  | Search & Categories           | ✅ Completed  |
-| Phase 7  | Password Generator            | ✅ Completed  |
-| Phase 8  | Clipboard Security            | ✅ Completed  |
-| Phase 9  | Auto-Lock                     | ✅ Completed  |
+| Phase    | Description                   | Status         |
+| -------- | ----------------------------- | -------------- |
+| Phase 1  | Project Foundation            | ✅ Completed   |
+| Phase 2  | MVVM Foundation               | ✅ Completed   |
+| Phase 3  | Basic Password CRUD           | ✅ Completed   |
+| Phase 4  | Master Password               | ✅ Completed   |
+| Phase 5  | Encryption & Persistent Vault | ✅ Completed   |
+| Phase 6  | Search & Categories           | ✅ Completed   |
+| Phase 7  | Password Generator            | ✅ Completed   |
+| Phase 8  | Clipboard Security            | ✅ Completed   |
+| Phase 9  | Auto-Lock                     | ✅ Completed   |
 | Phase 10 | UI Polish                     | ⬜ Not Started |
 | Phase 11 | Security Hardening            | ⬜ Not Started |
 | Phase 12 | Testing                       | ⬜ Not Started |
@@ -40,14 +40,14 @@
 
 ### Tasks
 
-* [x] Create WPF project
-* [x] Configure target framework
-* [x] Configure nullable reference types
-* [x] Create initial folder structure
-* [x] Configure application startup
-* [x] Create minimal Main Window
-* [x] Verify project builds
-* [x] Verify application runs
+* [X] Create WPF project
+* [X] Configure target framework
+* [X] Configure nullable reference types
+* [X] Create initial folder structure
+* [X] Configure application startup
+* [X] Create minimal Main Window
+* [X] Verify project builds
+* [X] Verify application runs
 
 ### Files Expected
 
@@ -82,13 +82,13 @@ No security-sensitive functionality should be implemented during this phase.
 
 ### Tasks
 
-* [x] Create base ViewModel
-* [x] Implement `INotifyPropertyChanged`
-* [x] Create RelayCommand
-* [x] Configure Dependency Injection
-* [x] Establish View/ViewModel relationship
-* [x] Implement basic data binding
-* [x] Verify commands and bindings
+* [X] Create base ViewModel
+* [X] Implement `INotifyPropertyChanged`
+* [X] Create RelayCommand
+* [X] Configure Dependency Injection
+* [X] Establish View/ViewModel relationship
+* [X] Implement basic data binding
+* [X] Verify commands and bindings
 
 ### Notes
 
@@ -102,14 +102,14 @@ Focus on understanding WPF and MVVM before implementing application functionalit
 
 ### Tasks
 
-* [x] Create PasswordEntry model
-* [x] Create temporary in-memory storage
-* [x] Display password entries
-* [x] Add password
-* [x] Edit password
-* [x] Delete password
-* [x] Select password
-* [x] Display password details
+* [X] Create PasswordEntry model
+* [X] Create temporary in-memory storage
+* [X] Display password entries
+* [X] Add password
+* [X] Edit password
+* [X] Delete password
+* [X] Select password
+* [X] Display password details
 
 ### Notes
 
@@ -123,19 +123,19 @@ Encryption and persistent storage are intentionally postponed until Phase 5.
 
 ### Tasks
 
-* [x] Create first-run setup
-* [x] Master password confirmation
-* [x] Password validation
-* [x] Login screen
-* [x] Unlock vault
-* [x] Manual lock
-* [x] Handle authentication failure
+* [X] Create first-run setup
+* [X] Master password confirmation
+* [X] Password validation
+* [X] Login screen
+* [X] Unlock vault
+* [X] Manual lock
+* [X] Handle authentication failure
 
 ### Security Notes
 
-* [x] Master password is never stored in plaintext
-* [x] No master password logging
-* [x] No hard-coded credentials
+* [X] Master password is never stored in plaintext
+* [X] No master password logging
+* [X] No hard-coded credentials
 
 ---
 
@@ -145,26 +145,26 @@ Encryption and persistent storage are intentionally postponed until Phase 5.
 
 ### Tasks
 
-* [x] Design vault file format
-* [x] Add vault versioning
-* [x] Generate cryptographic salt
-* [x] Implement password-based key derivation
-* [x] Implement AES-GCM encryption
-* [x] Implement AES-GCM decryption
-* [x] Generate unique nonce per encryption
-* [x] Store authentication tag
-* [x] Detect tampering/corruption
-* [x] Implement encrypted file storage
-* [x] Replace temporary storage
-* [x] Test save/load cycle
+* [X] Design vault file format
+* [X] Add vault versioning
+* [X] Generate cryptographic salt
+* [X] Implement password-based key derivation
+* [X] Implement AES-GCM encryption
+* [X] Implement AES-GCM decryption
+* [X] Generate unique nonce per encryption
+* [X] Store authentication tag
+* [X] Detect tampering/corruption
+* [X] Implement encrypted file storage
+* [X] Replace temporary storage
+* [X] Test save/load cycle
 
 ### Security Review
 
-* [x] No plaintext vault on disk
-* [x] No encryption keys logged
-* [x] No sensitive data in exceptions
-* [x] Cryptographic parameters documented
-* [x] Encryption/decryption tests pass
+* [X] No plaintext vault on disk
+* [X] No encryption keys logged
+* [X] No sensitive data in exceptions
+* [X] Cryptographic parameters documented
+* [X] Encryption/decryption tests pass
 
 ---
 
@@ -174,18 +174,18 @@ Encryption and persistent storage are intentionally postponed until Phase 5.
 
 ### Tasks
 
-* [x] Search by title
-* [x] Search by username
-* [x] Search by website
-* [x] Search by category
-* [x] Category model
-* [x] Category filtering
-* [x] All category
-* [x] Social category
-* [x] Work category
-* [x] Development category
-* [x] Finance category
-* [x] Personal category
+* [X] Search by title
+* [X] Search by username
+* [X] Search by website
+* [X] Search by category
+* [X] Category model
+* [X] Category filtering
+* [X] All category
+* [X] Social category
+* [X] Work category
+* [X] Development category
+* [X] Finance category
+* [X] Personal category
 
 ---
 
@@ -195,20 +195,20 @@ Encryption and persistent storage are intentionally postponed until Phase 5.
 
 ### Tasks
 
-* [x] Generator UI
-* [x] Length selection
-* [x] Uppercase option
-* [x] Lowercase option
-* [x] Number option
-* [x] Symbol option
-* [x] Secure random generation
-* [x] Input validation
-* [x] Copy generated password
+* [X] Generator UI
+* [X] Length selection
+* [X] Uppercase option
+* [X] Lowercase option
+* [X] Number option
+* [X] Symbol option
+* [X] Secure random generation
+* [X] Input validation
+* [X] Copy generated password
 
 ### Security Review
 
-* [x] Uses `RandomNumberGenerator`
-* [x] Does not use `System.Random`
+* [X] Uses `RandomNumberGenerator`
+* [X] Does not use `System.Random`
 
 ---
 
@@ -218,13 +218,13 @@ Encryption and persistent storage are intentionally postponed until Phase 5.
 
 ### Tasks
 
-* [x] Create ClipboardService
-* [x] Copy username
-* [x] Copy password
-* [x] Configure clipboard timeout
-* [x] Automatically clear copied password
-* [x] Detect clipboard changes
-* [x] Avoid overwriting another application's clipboard
+* [X] Create ClipboardService
+* [X] Copy username
+* [X] Copy password
+* [X] Configure clipboard timeout
+* [X] Automatically clear copied password
+* [X] Detect clipboard changes
+* [X] Avoid overwriting another application's clipboard
 
 ---
 
@@ -234,14 +234,14 @@ Encryption and persistent storage are intentionally postponed until Phase 5.
 
 ### Tasks
 
-* [x] Create AutoLockService
-* [x] Track user activity
-* [x] Reset inactivity timer
-* [x] Configure timeout
-* [x] Trigger automatic lock
-* [x] Manual lock
-* [x] Unlock after automatic lock
-* [x] Release unnecessary sensitive state after locking
+* [X] Create AutoLockService
+* [X] Track user activity
+* [X] Reset inactivity timer
+* [X] Configure timeout
+* [X] Trigger automatic lock
+* [X] Manual lock
+* [X] Unlock after automatic lock
+* [X] Release unnecessary sensitive state after locking
 
 ---
 

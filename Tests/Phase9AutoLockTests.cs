@@ -145,10 +145,12 @@ public static class Phase9AutoLockTests
         var storage = new InMemoryVaultStorage();
         var crypto = new AesGcmEncryptionService();
         var authService = new AuthenticationService(storage, crypto);
+        var passwordService = new EncryptedPasswordService(authService, crypto, storage);
         using var autoLockService = new AutoLockService(authService);
 
         autoLockService.Timeout = TimeSpan.FromMilliseconds(500);
         authService.InitializeMasterPassword("MasterPass123!", "MasterPass123!", out _);
+        passwordService.Add(new PasswordEntry { Title = "Test", Username = "user", Password = "password" });
 
         authService.Lock();
         Debug.Assert(!autoLockService.IsRunning, "Timer should be stopped when locked.");

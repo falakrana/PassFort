@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Security.Cryptography;
 using System.Text;
 using PasswordManager.Services.Encryption;
 
@@ -7,7 +8,7 @@ namespace PasswordManager.Services.Vault;
 
 /// <summary>
 /// Implements IVaultStorage using binary FileStream I/O with header magic identification,
-/// vault versioning, and length-prefixed payload components.
+/// vault versioning, length-prefixed payload components, and atomic file replacement for crash resilience.
 /// </summary>
 public class FileVaultStorage : IVaultStorage
 {
@@ -36,9 +37,9 @@ public class FileVaultStorage : IVaultStorage
         using var stream = new FileStream(_filePath, FileMode.Open, FileAccess.Read, FileShare.Read);
         using var reader = new BinaryReader(stream);
 
-        // Validate Magic Header
+        // Validate Magic Header using constant-time equality check
         byte[] magic = reader.ReadBytes(4);
-        if (magic.Length < 4 || !EqualBytes(magic, MagicBytes))
+        if (magic.Length < 4 || !CryptographicOperations.FixedTimeEquals(magic, MagicBytes))
         {
             throw new InvalidDataException("Invalid vault file format or corrupted header.");
         }
@@ -89,28 +90,47 @@ public class FileVaultStorage : IVaultStorage
             Directory.CreateDirectory(dir);
         }
 
-        using var stream = new FileStream(_filePath, FileMode.Create, FileAccess.Write, FileShare.None);
-        using var writer = new BinaryWriter(stream);
+        string tempPath = _filePath + ".tmp";
 
-        // Header: Magic + Version
-        writer.Write(MagicBytes);
-        writer.Write(CurrentVersion);
+        try
+        {
+            using (var stream = new FileStream(tempPath, FileMode.Create, FileAccess.Write, FileShare.None))
+            using (var writer = new BinaryWriter(stream))
+            {
+                // Header: Magic + Version
+                writer.Write(MagicBytes);
+                writer.Write(CurrentVersion);
 
-        // Salt
-        writer.Write(payload.Salt.Length);
-        writer.Write(payload.Salt);
+                // Salt
+                writer.Write(payload.Salt.Length);
+                writer.Write(payload.Salt);
 
-        // Nonce
-        writer.Write(payload.Nonce.Length);
-        writer.Write(payload.Nonce);
+                // Nonce
+                writer.Write(payload.Nonce.Length);
+                writer.Write(payload.Nonce);
 
-        // Tag
-        writer.Write(payload.Tag.Length);
-        writer.Write(payload.Tag);
+                // Tag
+                writer.Write(payload.Tag.Length);
+                writer.Write(payload.Tag);
 
-        // Ciphertext
-        writer.Write(payload.Ciphertext.Length);
-        writer.Write(payload.Ciphertext);
+                // Ciphertext
+                writer.Write(payload.Ciphertext.Length);
+                writer.Write(payload.Ciphertext);
+
+                stream.Flush(true); // Force flush to disk media
+            }
+
+            // Atomic file replacement to prevent corrupted or half-written vault files
+            File.Move(tempPath, _filePath, overwrite: true);
+        }
+        catch
+        {
+            if (File.Exists(tempPath))
+            {
+                try { File.Delete(tempPath); } catch { }
+            }
+            throw;
+        }
     }
 
     public void DeleteVault()
@@ -119,15 +139,12 @@ public class FileVaultStorage : IVaultStorage
         {
             File.Delete(_filePath);
         }
-    }
 
-    private static bool EqualBytes(byte[] a, byte[] b)
-    {
-        if (a.Length != b.Length) return false;
-        for (int i = 0; i < a.Length; i++)
+        string tempPath = _filePath + ".tmp";
+        if (File.Exists(tempPath))
         {
-            if (a[i] != b[i]) return false;
+            try { File.Delete(tempPath); } catch { }
         }
-        return true;
     }
 }
+

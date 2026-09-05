@@ -123,11 +123,18 @@ public class EncryptedPasswordService : IPasswordService
 
         var payload = _vaultStorage.ReadVault();
         byte[] plaintextBytes = _encryptionService.Decrypt(payload, key);
-
-        var loadedEntries = JsonSerializer.Deserialize<List<PasswordEntry>>(plaintextBytes);
-        if (loadedEntries != null)
+        try
         {
-            _entries.AddRange(loadedEntries);
+            var loadedEntries = JsonSerializer.Deserialize<List<PasswordEntry>>(plaintextBytes);
+            if (loadedEntries != null)
+            {
+                _entries.AddRange(loadedEntries);
+            }
+        }
+        finally
+        {
+            // Sensitive memory hygiene: zero out plaintext byte array
+            Array.Clear(plaintextBytes, 0, plaintextBytes.Length);
         }
     }
 
@@ -141,9 +148,16 @@ public class EncryptedPasswordService : IPasswordService
             ?? throw new InvalidOperationException("Cannot save vault: Salt is missing.");
 
         byte[] plaintextBytes = JsonSerializer.SerializeToUtf8Bytes(_entries);
-        var payload = _encryptionService.Encrypt(plaintextBytes, key, salt);
-
-        _vaultStorage.WriteVault(payload);
+        try
+        {
+            var payload = _encryptionService.Encrypt(plaintextBytes, key, salt);
+            _vaultStorage.WriteVault(payload);
+        }
+        finally
+        {
+            // Sensitive memory hygiene: zero out plaintext byte array
+            Array.Clear(plaintextBytes, 0, plaintextBytes.Length);
+        }
     }
 
     private void EnsureUnlocked()

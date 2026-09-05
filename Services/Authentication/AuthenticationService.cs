@@ -1,4 +1,5 @@
 using System;
+using System.IO;
 using System.Security.Cryptography;
 using PasswordManager.Services.Encryption;
 using PasswordManager.Services.Vault;
@@ -90,13 +91,14 @@ public class AuthenticationService : IAuthenticationService
             return false;
         }
 
+        byte[]? candidateKey = null;
         try
         {
             // Read vault file header & payload
             var payload = _vaultStorage.ReadVault();
 
             // Derive key from input password and stored salt
-            byte[] candidateKey = _encryptionService.DeriveKey(password, payload.Salt);
+            candidateKey = _encryptionService.DeriveKey(password, payload.Salt);
 
             // Attempt to decrypt payload to verify authentication tag (AES-GCM integrity check)
             _encryptionService.Decrypt(payload, candidateKey);
@@ -112,12 +114,26 @@ public class AuthenticationService : IAuthenticationService
         }
         catch (CryptographicException)
         {
+            if (candidateKey != null) Array.Clear(candidateKey, 0, candidateKey.Length);
             errorMessage = "Incorrect master password or corrupted vault data. Please try again.";
             return false;
         }
-        catch (Exception ex)
+        catch (InvalidDataException)
         {
-            errorMessage = $"Failed to open vault: {ex.Message}";
+            if (candidateKey != null) Array.Clear(candidateKey, 0, candidateKey.Length);
+            errorMessage = "Vault file format is invalid or corrupted.";
+            return false;
+        }
+        catch (FileNotFoundException)
+        {
+            if (candidateKey != null) Array.Clear(candidateKey, 0, candidateKey.Length);
+            errorMessage = "Vault file could not be found.";
+            return false;
+        }
+        catch (Exception)
+        {
+            if (candidateKey != null) Array.Clear(candidateKey, 0, candidateKey.Length);
+            errorMessage = "An unexpected error occurred while accessing the vault.";
             return false;
         }
     }

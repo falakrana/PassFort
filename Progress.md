@@ -2,7 +2,7 @@
 
 ## Project Status
 
-**Current Phase:** Phase 10 — UI Polish
+**Current Phase:** Phase 11 — Security Hardening
 **Status:** Completed
 **Last Updated:** 2026-09-05
 
@@ -22,7 +22,7 @@
 | Phase 8  | Clipboard Security            | ✅ Completed   |
 | Phase 9  | Auto-Lock                     | ✅ Completed   |
 | Phase 10 | UI Polish                     | ✅ Completed   |
-| Phase 11 | Security Hardening            | ⬜ Not Started |
+| Phase 11 | Security Hardening            | ✅ Completed   |
 | Phase 12 | Testing                       | ⬜ Not Started |
 
 ### Status Legend
@@ -267,25 +267,25 @@ Encryption and persistent storage are intentionally postponed until Phase 5.
 
 # Phase 11 — Security Hardening
 
-**Status:** ⬜ Not Started
+**Status:** ✅ Completed
 
 ### Security Checklist
 
-* [ ] Review master password handling
-* [ ] Review key derivation
-* [ ] Review AES-GCM implementation
-* [ ] Review nonce generation
-* [ ] Review vault file format
-* [ ] Review file permissions
-* [ ] Review plaintext data lifetime
-* [ ] Review clipboard handling
-* [ ] Review auto-lock behavior
-* [ ] Review logging
-* [ ] Review exception messages
-* [ ] Review authentication
-* [ ] Review random number generation
-* [ ] Review dependency vulnerabilities
-* [ ] Perform final security review
+* [X] Review master password handling
+* [X] Review key derivation
+* [X] Review AES-GCM implementation
+* [X] Review nonce generation
+* [X] Review vault file format
+* [X] Review file permissions
+* [X] Review plaintext data lifetime
+* [X] Review clipboard handling
+* [X] Review auto-lock behavior
+* [X] Review logging
+* [X] Review exception messages
+* [X] Review authentication
+* [X] Review random number generation
+* [X] Review dependency vulnerabilities
+* [X] Perform final security review
 
 ---
 

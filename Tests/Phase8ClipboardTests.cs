@@ -184,7 +184,7 @@ public static class Phase8ClipboardTests
         });
 
         var vm = new MainViewModel(passwordService, authService, new PasswordGeneratorService(), clipboardService);
-        vm.SelectedEntry = vm.PasswordEntries[0];
+        vm.SelectedEntry = vm.PasswordEntries.FirstOrDefault(e => e.Username == "octocat");
 
         Debug.Assert(vm.CopyUsernameCommand.CanExecute(null), "CopyUsernameCommand should be executable for selected entry.");
         vm.CopyUsernameCommand.Execute(null);
@@ -209,7 +209,7 @@ public static class Phase8ClipboardTests
         passwordService.Add(new PasswordEntry { Title = "Mail", Username = "user", Password = "MailPassword" });
 
         var vm = new MainViewModel(passwordService, authService, new PasswordGeneratorService(), clipboardService);
-        vm.SelectedEntry = vm.PasswordEntries[0];
+        vm.SelectedEntry = vm.PasswordEntries.FirstOrDefault(e => e.Username == "user");
         vm.CopyPasswordCommand.Execute(null);
 
         Debug.Assert(clipboardService.GetText() == "MailPassword", "Clipboard should hold password.");

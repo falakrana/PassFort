@@ -2,7 +2,7 @@
 
 ## Project Status
 
-**Current Phase:** Phase 11 — Security Hardening
+**Current Phase:** Phase 12 — Testing
 **Status:** Completed
 **Last Updated:** 2026-09-05
 
@@ -23,7 +23,7 @@
 | Phase 9  | Auto-Lock                     | ✅ Completed   |
 | Phase 10 | UI Polish                     | ✅ Completed   |
 | Phase 11 | Security Hardening            | ✅ Completed   |
-| Phase 12 | Testing                       | ⬜ Not Started |
+| Phase 12 | Testing                       | ✅ Completed   |
 
 ### Status Legend
 
@@ -291,31 +291,31 @@ Encryption and persistent storage are intentionally postponed until Phase 5.
 
 # Phase 12 — Testing
 
-**Status:** ⬜ Not Started
+**Status:** ✅ Completed
 
 ### Unit Tests
 
-* [ ] Encryption/decryption
-* [ ] Wrong password
-* [ ] Vault tampering
-* [ ] Vault corruption
-* [ ] Password generation
-* [ ] Password CRUD
-* [ ] Search
-* [ ] Categories
-* [ ] Auto-lock
-* [ ] Clipboard behavior
+* [X] Encryption/decryption
+* [X] Wrong password
+* [X] Vault tampering
+* [X] Vault corruption
+* [X] Password generation
+* [X] Password CRUD
+* [X] Search
+* [X] Categories
+* [X] Auto-lock
+* [X] Clipboard behavior
 
 ### Integration Tests
 
-* [ ] Create vault
-* [ ] Save encrypted vault
-* [ ] Load vault
-* [ ] Unlock vault
-* [ ] Modify vault
-* [ ] Lock vault
-* [ ] Reopen application
-* [ ] Recover from invalid/corrupted vault
+* [X] Create vault
+* [X] Save encrypted vault
+* [X] Load vault
+* [X] Unlock vault
+* [X] Modify vault
+* [X] Lock vault
+* [X] Reopen application
+* [X] Recover from invalid/corrupted vault
 
 ---
 

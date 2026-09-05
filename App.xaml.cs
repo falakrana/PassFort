@@ -37,6 +37,8 @@ public partial class App : Application
         Tests.Phase8ClipboardTests.RunAllTests();
         Tests.Phase9AutoLockTests.RunAllTests();
         Tests.Phase11SecurityHardeningTests.RunAllTests();
+        Tests.Phase12TestingTests.RunAllTests();
+        Tests.Phase12IntegrationTests.RunAllTests();
 
         var serviceCollection = new ServiceCollection();
         ConfigureServices(serviceCollection);

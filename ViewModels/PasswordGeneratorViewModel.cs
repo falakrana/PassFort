@@ -1,7 +1,7 @@
 using System;
-using System.Windows;
 using System.Windows.Input;
 using PasswordManager.Commands;
+using PasswordManager.Services.Clipboard;
 using PasswordManager.Services.PasswordGenerator;
 using PasswordManager.ViewModels.Base;
 
@@ -13,6 +13,7 @@ namespace PasswordManager.ViewModels;
 public class PasswordGeneratorViewModel : ViewModelBase
 {
     private readonly IPasswordGeneratorService _generatorService;
+    private readonly IClipboardService _clipboardService;
 
     private int _length = 16;
     private bool _includeUppercase = true;
@@ -22,9 +23,10 @@ public class PasswordGeneratorViewModel : ViewModelBase
     private string _generatedPassword = string.Empty;
     private string? _validationMessage;
 
-    public PasswordGeneratorViewModel(IPasswordGeneratorService generatorService)
+    public PasswordGeneratorViewModel(IPasswordGeneratorService generatorService, IClipboardService? clipboardService = null)
     {
         _generatorService = generatorService ?? throw new ArgumentNullException(nameof(generatorService));
+        _clipboardService = clipboardService ?? new ClipboardService();
 
         GenerateCommand = new RelayCommand(ExecuteGenerate, CanExecuteGenerate);
         CopyCommand = new RelayCommand(ExecuteCopy, CanExecuteCopy);
@@ -35,7 +37,7 @@ public class PasswordGeneratorViewModel : ViewModelBase
     /// <summary>
     /// Parameterless constructor for design-time support.
     /// </summary>
-    public PasswordGeneratorViewModel() : this(new PasswordGeneratorService())
+    public PasswordGeneratorViewModel() : this(new PasswordGeneratorService(), new ClipboardService())
     {
     }
 
@@ -182,7 +184,7 @@ public class PasswordGeneratorViewModel : ViewModelBase
         {
             try
             {
-                Clipboard.SetText(GeneratedPassword);
+                _clipboardService.CopySensitiveToClipboard(GeneratedPassword);
             }
             catch
             {
@@ -191,3 +193,4 @@ public class PasswordGeneratorViewModel : ViewModelBase
         }
     }
 }
+

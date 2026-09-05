@@ -2,6 +2,7 @@ using System;
 using System.Windows;
 using Microsoft.Extensions.DependencyInjection;
 using PasswordManager.Services.Authentication;
+using PasswordManager.Services.Clipboard;
 using PasswordManager.Services.Encryption;
 using PasswordManager.Services.PasswordGenerator;
 using PasswordManager.Services.Vault;
@@ -32,6 +33,7 @@ public partial class App : Application
         Tests.Phase5EncryptionTests.RunAllTests();
         Tests.Phase6SearchAndCategoryTests.RunAllTests();
         Tests.Phase7PasswordGeneratorTests.RunAllTests();
+        Tests.Phase8ClipboardTests.RunAllTests();
 
         var serviceCollection = new ServiceCollection();
         ConfigureServices(serviceCollection);
@@ -52,6 +54,7 @@ public partial class App : Application
         // Infrastructure Services
         services.AddSingleton<IEncryptionService, AesGcmEncryptionService>();
         services.AddSingleton<IVaultStorage, FileVaultStorage>();
+        services.AddSingleton<IClipboardService, ClipboardService>();
 
         // Domain Services
         services.AddSingleton<IAuthenticationService, AuthenticationService>();

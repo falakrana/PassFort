@@ -276,9 +276,16 @@
 
                                 <!-- Username Field -->
                                 <TextBlock Text="USERNAME / EMAIL" FontSize="11" FontWeight="Bold" Foreground="#64748B" Margin="0,0,0,4"/>
-                                <TextBox Text="{Binding SelectedEntry.Username, Mode=OneWay}" IsReadOnly="True" BorderThickness="0" Background="Transparent" FontSize="16" Foreground="#0F172A" Margin="0,0,0,16"/>
+                                <Grid Margin="0,0,0,16">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+                                    <TextBox Grid.Column="0" Text="{Binding SelectedEntry.Username, Mode=OneWay}" IsReadOnly="True" BorderThickness="0" Background="Transparent" FontSize="16" Foreground="#0F172A" VerticalAlignment="Center"/>
+                                    <Button Grid.Column="1" Content="📋 Copy Username" Command="{Binding CopyUsernameCommand}" Style="{StaticResource SecondaryButtonStyle}"/>
+                                </Grid>
 
-                                <!-- Password Field with Masking Toggle -->
+                                <!-- Password Field with Masking Toggle and Copy -->
                                 <TextBlock Text="PASSWORD" FontSize="11" FontWeight="Bold" Foreground="#64748B" Margin="0,0,0,4"/>
                                 <Grid Margin="0,0,0,16">
                                     <Grid.ColumnDefinitions>
@@ -294,10 +301,10 @@
                                     <TextBox Grid.Column="0" Text="{Binding SelectedEntry.Password, Mode=OneWay}" IsReadOnly="True" BorderThickness="0" Background="Transparent" FontSize="16" FontWeight="Bold" Foreground="#2563EB" VerticalAlignment="Center"
                                              Visibility="{Binding IsPasswordVisible, Converter={StaticResource BoolToVis}}"/>
 
-                                    <Button Grid.Column="1" 
-                                            Content="👁️ Toggle" 
-                                            Command="{Binding TogglePasswordVisibilityCommand}" 
-                                            Style="{StaticResource SecondaryButtonStyle}"/>
+                                    <StackPanel Grid.Column="1" Orientation="Horizontal">
+                                        <Button Content="👁️ Toggle" Command="{Binding TogglePasswordVisibilityCommand}" Style="{StaticResource SecondaryButtonStyle}" Margin="0,0,8,0"/>
+                                        <Button Content="📋 Copy Password" Command="{Binding CopyPasswordCommand}" Style="{StaticResource PrimaryButtonStyle}"/>
+                                    </StackPanel>
                                 </Grid>
 
                                 <!-- Website Field -->

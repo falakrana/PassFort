@@ -8,6 +8,7 @@ using System.Windows.Input;
 using PasswordManager.Commands;
 using PasswordManager.Models;
 using PasswordManager.Services.Authentication;
+using PasswordManager.Services.Clipboard;
 using PasswordManager.Services.Encryption;
 using PasswordManager.Services.PasswordGenerator;
 using PasswordManager.Services.Vault;
@@ -16,13 +17,14 @@ using PasswordManager.ViewModels.Base;
 namespace PasswordManager.ViewModels;
 
 /// <summary>
-/// Main window ViewModel coordinating password entries CRUD, selection, search & category filtering, password generation, and vault state.
+/// Main window ViewModel coordinating password entries CRUD, selection, search & category filtering, password generation, clipboard operations, and vault state.
 /// </summary>
 public class MainViewModel : ViewModelBase
 {
     private readonly IPasswordService _passwordService;
     private readonly IAuthenticationService _authService;
     private readonly IPasswordGeneratorService _generatorService;
+    private readonly IClipboardService _clipboardService;
 
     private string _title = "Secure Password Manager — Vault";
     private string _statusMessage = "Ready";
@@ -40,18 +42,21 @@ public class MainViewModel : ViewModelBase
     public MainViewModel(
         IPasswordService passwordService,
         IAuthenticationService authService,
-        IPasswordGeneratorService? generatorService = null)
+        IPasswordGeneratorService? generatorService = null,
+        IClipboardService? clipboardService = null)
     {
         _passwordService = passwordService ?? throw new ArgumentNullException(nameof(passwordService));
         _authService = authService ?? throw new ArgumentNullException(nameof(authService));
         _generatorService = generatorService ?? new PasswordGeneratorService();
+        _clipboardService = clipboardService ?? new ClipboardService();
 
         LoginViewModel = new LoginViewModel(_authService);
         LoginViewModel.Authenticated += OnAuthenticated;
 
-        PasswordGeneratorViewModel = new PasswordGeneratorViewModel(_generatorService);
+        PasswordGeneratorViewModel = new PasswordGeneratorViewModel(_generatorService, _clipboardService);
 
         _authService.LockStateChanged += OnLockStateChanged;
+        _clipboardService.ClipboardCleared += OnClipboardCleared;
 
         PasswordEntries = new ObservableCollection<PasswordEntry>();
         _filteredEntries = CollectionViewSource.GetDefaultView(PasswordEntries);
@@ -66,6 +71,8 @@ public class MainViewModel : ViewModelBase
         LockCommand = new RelayCommand(ExecuteLock, CanExecuteLock);
         ClearSearchCommand = new RelayCommand(ExecuteClearSearch, CanExecuteClearSearch);
         GeneratePasswordForEntryCommand = new RelayCommand(ExecuteGeneratePasswordForEntry, CanExecuteGeneratePasswordForEntry);
+        CopyUsernameCommand = new RelayCommand(ExecuteCopyUsername, CanExecuteCopyUsername);
+        CopyPasswordCommand = new RelayCommand(ExecuteCopyPassword, CanExecuteCopyPassword);
 
         if (IsVaultUnlocked)
         {
@@ -82,7 +89,8 @@ public class MainViewModel : ViewModelBase
             new AesGcmEncryptionService(),
             new FileVaultStorage()),
         new AuthenticationService(new FileVaultStorage(), new AesGcmEncryptionService()),
-        new PasswordGeneratorService())
+        new PasswordGeneratorService(),
+        new ClipboardService())
     {
     }
 
@@ -206,6 +214,8 @@ public class MainViewModel : ViewModelBase
     public ICommand LockCommand { get; }
     public ICommand ClearSearchCommand { get; }
     public ICommand GeneratePasswordForEntryCommand { get; }
+    public ICommand CopyUsernameCommand { get; }
+    public ICommand CopyPasswordCommand { get; }
 
     public void LoadEntries()
     {
@@ -278,6 +288,7 @@ public class MainViewModel : ViewModelBase
         OnPropertyChanged(nameof(IsVaultUnlocked));
         if (!IsVaultUnlocked)
         {
+            _clipboardService.ClearClipboard();
             SelectedEntry = null;
             EditingEntry = null;
             IsAdding = false;
@@ -292,12 +303,43 @@ public class MainViewModel : ViewModelBase
         }
     }
 
+    private void OnClipboardCleared(string clearedText)
+    {
+        if (IsVaultUnlocked)
+        {
+            StatusMessage = "Copied password automatically cleared from clipboard.";
+        }
+    }
+
     private void ExecuteLock()
     {
         _authService.Lock();
     }
 
     private bool CanExecuteLock() => IsVaultUnlocked;
+
+    private bool CanExecuteCopyUsername() => IsVaultUnlocked && SelectedEntry != null && !string.IsNullOrEmpty(SelectedEntry.Username);
+
+    private void ExecuteCopyUsername()
+    {
+        if (SelectedEntry != null && !string.IsNullOrEmpty(SelectedEntry.Username))
+        {
+            _clipboardService.CopyToClipboard(SelectedEntry.Username);
+            StatusMessage = "Username copied to clipboard.";
+        }
+    }
+
+    private bool CanExecuteCopyPassword() => IsVaultUnlocked && SelectedEntry != null && !string.IsNullOrEmpty(SelectedEntry.Password);
+
+    private void ExecuteCopyPassword()
+    {
+        if (SelectedEntry != null && !string.IsNullOrEmpty(SelectedEntry.Password))
+        {
+            var timeoutSeconds = (int)_clipboardService.DefaultTimeout.TotalSeconds;
+            _clipboardService.CopySensitiveToClipboard(SelectedEntry.Password);
+            StatusMessage = $"Password copied to clipboard (auto-clears in {timeoutSeconds}s).";
+        }
+    }
 
     private void ExecuteAddNew()
     {
@@ -426,3 +468,4 @@ public class MainViewModel : ViewModelBase
         CommandManager.InvalidateRequerySuggested();
     }
 }
+

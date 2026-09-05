@@ -8,6 +8,7 @@ using System.Windows.Input;
 using PasswordManager.Commands;
 using PasswordManager.Models;
 using PasswordManager.Services.Authentication;
+using PasswordManager.Services.AutoLock;
 using PasswordManager.Services.Clipboard;
 using PasswordManager.Services.Encryption;
 using PasswordManager.Services.PasswordGenerator;
@@ -25,6 +26,7 @@ public class MainViewModel : ViewModelBase
     private readonly IAuthenticationService _authService;
     private readonly IPasswordGeneratorService _generatorService;
     private readonly IClipboardService _clipboardService;
+    private readonly IAutoLockService _autoLockService;
 
     private string _title = "Secure Password Manager — Vault";
     private string _statusMessage = "Ready";
@@ -43,12 +45,14 @@ public class MainViewModel : ViewModelBase
         IPasswordService passwordService,
         IAuthenticationService authService,
         IPasswordGeneratorService? generatorService = null,
-        IClipboardService? clipboardService = null)
+        IClipboardService? clipboardService = null,
+        IAutoLockService? autoLockService = null)
     {
         _passwordService = passwordService ?? throw new ArgumentNullException(nameof(passwordService));
         _authService = authService ?? throw new ArgumentNullException(nameof(authService));
         _generatorService = generatorService ?? new PasswordGeneratorService();
         _clipboardService = clipboardService ?? new ClipboardService();
+        _autoLockService = autoLockService ?? new AutoLockService(_authService);
 
         LoginViewModel = new LoginViewModel(_authService);
         LoginViewModel.Authenticated += OnAuthenticated;
@@ -57,6 +61,7 @@ public class MainViewModel : ViewModelBase
 
         _authService.LockStateChanged += OnLockStateChanged;
         _clipboardService.ClipboardCleared += OnClipboardCleared;
+        _autoLockService.AutoLocked += OnAutoLocked;
 
         PasswordEntries = new ObservableCollection<PasswordEntry>();
         _filteredEntries = CollectionViewSource.GetDefaultView(PasswordEntries);
@@ -90,7 +95,8 @@ public class MainViewModel : ViewModelBase
             new FileVaultStorage()),
         new AuthenticationService(new FileVaultStorage(), new AesGcmEncryptionService()),
         new PasswordGeneratorService(),
-        new ClipboardService())
+        new ClipboardService(),
+        new AutoLockService(new AuthenticationService(new FileVaultStorage(), new AesGcmEncryptionService())))
     {
     }
 
@@ -309,6 +315,22 @@ public class MainViewModel : ViewModelBase
         {
             StatusMessage = "Copied password automatically cleared from clipboard.";
         }
+    }
+
+    private void OnAutoLocked(object? sender, EventArgs e)
+    {
+        if (!IsVaultUnlocked)
+        {
+            StatusMessage = "Vault automatically locked due to inactivity.";
+        }
+    }
+
+    /// <summary>
+    /// Registers user activity with the auto-lock service to reset the inactivity timer.
+    /// </summary>
+    public void RegisterUserActivity()
+    {
+        _autoLockService.RegisterActivity();
     }
 
     private void ExecuteLock()

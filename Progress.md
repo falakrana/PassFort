@@ -2,7 +2,7 @@
 
 ## Project Status
 
-**Current Phase:** Phase 8 — Clipboard Security
+**Current Phase:** Phase 9 — Auto-Lock
 **Status:** Completed
 **Last Updated:** 2026-09-05
 
@@ -20,7 +20,7 @@
 | Phase 6  | Search & Categories           | ✅ Completed  |
 | Phase 7  | Password Generator            | ✅ Completed  |
 | Phase 8  | Clipboard Security            | ✅ Completed  |
-| Phase 9  | Auto-Lock                     | ⬜ Not Started |
+| Phase 9  | Auto-Lock                     | ✅ Completed  |
 | Phase 10 | UI Polish                     | ⬜ Not Started |
 | Phase 11 | Security Hardening            | ⬜ Not Started |
 | Phase 12 | Testing                       | ⬜ Not Started |
@@ -230,18 +230,18 @@ Encryption and persistent storage are intentionally postponed until Phase 5.
 
 # Phase 9 — Auto-Lock
 
-**Status:** ⬜ Not Started
+**Status:** ✅ Completed
 
 ### Tasks
 
-* [ ] Create AutoLockService
-* [ ] Track user activity
-* [ ] Reset inactivity timer
-* [ ] Configure timeout
-* [ ] Trigger automatic lock
-* [ ] Manual lock
-* [ ] Unlock after automatic lock
-* [ ] Release unnecessary sensitive state after locking
+* [x] Create AutoLockService
+* [x] Track user activity
+* [x] Reset inactivity timer
+* [x] Configure timeout
+* [x] Trigger automatic lock
+* [x] Manual lock
+* [x] Unlock after automatic lock
+* [x] Release unnecessary sensitive state after locking
 
 ---
 

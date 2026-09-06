@@ -90,6 +90,12 @@ public static class PasswordCRUDTests
         }
     }
 
+    private class TestDialogService : Services.UI.IDialogService
+    {
+        public bool ShowConfirmation(string title, string message) => true;
+        public void ShowMessage(string title, string message) { }
+    }
+
     private static void TestMainViewModelCRUDCommands()
     {
         var (authService, tempFile) = CreateUnlockedAuthService();
@@ -98,7 +104,7 @@ public static class PasswordCRUDTests
             var encryptionService = new AesGcmEncryptionService();
             var storage = new FileVaultStorage(tempFile);
             IPasswordService service = new EncryptedPasswordService(authService, encryptionService, storage);
-            var vm = new MainViewModel(service, authService);
+            var vm = new MainViewModel(service, authService, dialogService: new TestDialogService());
 
             // Initial selection
             if (vm.SelectedEntry == null)
@@ -168,7 +174,7 @@ public static class PasswordCRUDTests
             var encryptionService = new AesGcmEncryptionService();
             var storage = new FileVaultStorage(tempFile);
             IPasswordService service = new EncryptedPasswordService(authService, encryptionService, storage);
-            var vm = new MainViewModel(service, authService);
+            var vm = new MainViewModel(service, authService, dialogService: new TestDialogService());
 
             vm.AddNewCommand.Execute(null);
             vm.EditingEntry!.Title = ""; // Empty title

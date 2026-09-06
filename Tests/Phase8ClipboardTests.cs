@@ -1,5 +1,4 @@
 using System;
-using System.Diagnostics;
 using System.Threading;
 using PasswordManager.Models;
 using PasswordManager.Services.Authentication;
@@ -116,9 +115,15 @@ public static class Phase8ClipboardTests
         }
     }
 
+    private class TestDialogService : Services.UI.IDialogService
+    {
+        public bool ShowConfirmation(string title, string message) => true;
+        public void ShowMessage(string title, string message) { }
+    }
+
     public static void RunAllTests()
     {
-        Debug.WriteLine("=== Running Phase 8 Clipboard Security Tests ===");
+        Console.WriteLine("=== Running Phase 8 Clipboard Security Tests ===");
 
         TestStandardCopy();
         TestSensitiveCopyAutoClear();
@@ -127,7 +132,7 @@ public static class Phase8ClipboardTests
         TestVaultLockClearsClipboard();
         TestPasswordGeneratorViewModelCopy();
 
-        Debug.WriteLine("=== All Phase 8 Clipboard Security Tests Passed Successfully ===");
+        Console.WriteLine("[PASS] All Phase 8 Clipboard Security Tests Passed Successfully");
     }
 
     private static void TestStandardCopy()
@@ -135,7 +140,7 @@ public static class Phase8ClipboardTests
         using var clipboard = new InMemoryClipboardService();
         clipboard.CopyToClipboard("john_doe");
 
-        Debug.Assert(clipboard.GetText() == "john_doe", "Standard copy should set clipboard text.");
+        Assert(clipboard.GetText() == "john_doe", "Standard copy should set clipboard text.");
     }
 
     private static void TestSensitiveCopyAutoClear()
@@ -145,12 +150,12 @@ public static class Phase8ClipboardTests
         clipboard.ClipboardCleared += _ => eventFired = true;
 
         clipboard.CopySensitiveToClipboard("SuperSecretPassword123!", TimeSpan.FromMilliseconds(100));
-        Debug.Assert(clipboard.GetText() == "SuperSecretPassword123!", "Sensitive copy should immediately place text on clipboard.");
+        Assert(clipboard.GetText() == "SuperSecretPassword123!", "Sensitive copy should immediately place text on clipboard.");
 
         Thread.Sleep(250);
 
-        Debug.Assert(clipboard.GetText() == null, "Clipboard should automatically clear sensitive text after timeout.");
-        Debug.Assert(eventFired, "ClipboardCleared event should fire upon automatic clearing.");
+        Assert(clipboard.GetText() == null, "Clipboard should automatically clear sensitive text after timeout.");
+        Assert(eventFired, "ClipboardCleared event should fire upon automatic clearing.");
     }
 
     private static void TestExternalOverwriteProtection()
@@ -164,7 +169,7 @@ public static class Phase8ClipboardTests
         Thread.Sleep(250);
 
         // The auto-clear timer should NOT clear the new external text!
-        Debug.Assert(clipboard.GetText() == "ExternalTextFromBrowser", "Auto-clear timer must NOT wipe external clipboard content if changed.");
+        Assert(clipboard.GetText() == "ExternalTextFromBrowser", "Auto-clear timer must NOT wipe external clipboard content if changed.");
     }
 
     private static void TestMainViewModelCopyCommands()
@@ -183,18 +188,18 @@ public static class Phase8ClipboardTests
             Password = "SecretGitHubPassword"
         });
 
-        var vm = new MainViewModel(passwordService, authService, new PasswordGeneratorService(), clipboardService);
+        var vm = new MainViewModel(passwordService, authService, new PasswordGeneratorService(), clipboardService, dialogService: new TestDialogService());
         vm.SelectedEntry = vm.PasswordEntries.FirstOrDefault(e => e.Username == "octocat");
 
-        Debug.Assert(vm.CopyUsernameCommand.CanExecute(null), "CopyUsernameCommand should be executable for selected entry.");
+        Assert(vm.CopyUsernameCommand.CanExecute(null), "CopyUsernameCommand should be executable for selected entry.");
         vm.CopyUsernameCommand.Execute(null);
-        Debug.Assert(clipboardService.GetText() == "octocat", "CopyUsernameCommand should copy username to clipboard.");
-        Debug.Assert(vm.StatusMessage.Contains("Username copied"), "StatusMessage should report username copied.");
+        Assert(clipboardService.GetText() == "octocat", "CopyUsernameCommand should copy username to clipboard.");
+        Assert(vm.StatusMessage.Contains("Username copied"), "StatusMessage should report username copied.");
 
-        Debug.Assert(vm.CopyPasswordCommand.CanExecute(null), "CopyPasswordCommand should be executable for selected entry.");
+        Assert(vm.CopyPasswordCommand.CanExecute(null), "CopyPasswordCommand should be executable for selected entry.");
         vm.CopyPasswordCommand.Execute(null);
-        Debug.Assert(clipboardService.GetText() == "SecretGitHubPassword", "CopyPasswordCommand should copy password to clipboard.");
-        Debug.Assert(vm.StatusMessage.Contains("auto-clears"), "StatusMessage should report auto-clear timeout.");
+        Assert(clipboardService.GetText() == "SecretGitHubPassword", "CopyPasswordCommand should copy password to clipboard.");
+        Assert(vm.StatusMessage.Contains("auto-clears"), "StatusMessage should report auto-clear timeout.");
     }
 
     private static void TestVaultLockClearsClipboard()
@@ -208,16 +213,16 @@ public static class Phase8ClipboardTests
         authService.InitializeMasterPassword("Master123!", "Master123!", out _);
         passwordService.Add(new PasswordEntry { Title = "Mail", Username = "user", Password = "MailPassword" });
 
-        var vm = new MainViewModel(passwordService, authService, new PasswordGeneratorService(), clipboardService);
+        var vm = new MainViewModel(passwordService, authService, new PasswordGeneratorService(), clipboardService, dialogService: new TestDialogService());
         vm.SelectedEntry = vm.PasswordEntries.FirstOrDefault(e => e.Username == "user");
         vm.CopyPasswordCommand.Execute(null);
 
-        Debug.Assert(clipboardService.GetText() == "MailPassword", "Clipboard should hold password.");
+        Assert(clipboardService.GetText() == "MailPassword", "Clipboard should hold password.");
 
         // Lock vault
         vm.LockCommand.Execute(null);
 
-        Debug.Assert(clipboardService.GetText() == null, "Locking vault must immediately clear sensitive clipboard data.");
+        Assert(clipboardService.GetText() == null, "Locking vault must immediately clear sensitive clipboard data.");
     }
 
     private static void TestPasswordGeneratorViewModelCopy()
@@ -227,11 +232,19 @@ public static class Phase8ClipboardTests
 
         genVm.GeneratePassword();
         var genPass = genVm.GeneratedPassword;
-        Debug.Assert(!string.IsNullOrEmpty(genPass), "Password should be generated.");
+        Assert(!string.IsNullOrEmpty(genPass), "Password should be generated.");
 
-        Debug.Assert(genVm.CopyCommand.CanExecute(null), "CopyCommand should be executable.");
+        Assert(genVm.CopyCommand.CanExecute(null), "CopyCommand should be executable.");
         genVm.CopyCommand.Execute(null);
 
-        Debug.Assert(clipboardService.GetText() == genPass, "PasswordGeneratorViewModel CopyCommand should copy generated password to clipboard.");
+        Assert(clipboardService.GetText() == genPass, "PasswordGeneratorViewModel CopyCommand should copy generated password to clipboard.");
+    }
+
+    private static void Assert(bool condition, string message)
+    {
+        if (!condition)
+        {
+            throw new Exception($"[TEST FAILURE] {message}");
+        }
     }
 }

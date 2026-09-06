@@ -37,11 +37,14 @@ public static class Phase12IntegrationTests
             Assert(!storage.VaultExists(), "Vault file should not exist initially.");
             bool initOk = authService.InitializeMasterPassword("Phase12MasterPass!2026", "Phase12MasterPass!2026", out var initErr);
             Assert(initOk && initErr == null, "Vault initialization must succeed.");
-            Assert(storage.VaultExists(), "Vault file must be created on disk.");
+            Assert(authService.IsUnlocked, "Auth service must be unlocked after initialization.");
 
             var passwordService = new EncryptedPasswordService(authService, encryptionService, storage);
 
-            // 2. Modify vault (Add)
+            // Capture baseline count (includes seeded default entries added on first vault creation)
+            int baselineCount = passwordService.GetAll().Count();
+
+            // 2. Modify vault (Add) — vault file is first written to disk here
             var entry1 = new PasswordEntry
             {
                 Title = "GitHub Enterprise",
@@ -51,10 +54,12 @@ public static class Phase12IntegrationTests
                 Category = "Development"
             };
             passwordService.Add(entry1);
-            Assert(passwordService.GetAll().Count() == 1, "Password entry count should be 1 after Add.");
+            Assert(storage.VaultExists(), "Vault file must be created on disk after first save.");
+            Assert(passwordService.GetAll().Count() == baselineCount + 1, "Password entry count should increase by 1 after Add.");
+            Assert(passwordService.GetAll().Any(e => e.Title == "GitHub Enterprise"), "Added entry must be retrievable by title.");
 
             // Modify vault (Edit)
-            var createdEntry = passwordService.GetAll().First();
+            var createdEntry = passwordService.GetAll().First(e => e.Title == "GitHub Enterprise");
             createdEntry.Password = "UpdatedGitPassword456!";
             passwordService.Update(createdEntry);
 
@@ -71,7 +76,8 @@ public static class Phase12IntegrationTests
 
             // Modify vault (Delete)
             passwordService.Delete(createdEntry.Id);
-            Assert(passwordService.GetAll().Count() == 0, "Password entry count should be 0 after Delete.");
+            Assert(passwordService.GetAll().Count() == baselineCount, "Password entry count should return to baseline after Delete.");
+            Assert(!passwordService.GetAll().Any(e => e.Id == createdEntry.Id), "Deleted entry must not exist in vault.");
         }
         finally
         {
@@ -86,6 +92,8 @@ public static class Phase12IntegrationTests
 
         try
         {
+            int sessionOneCount;
+
             // First Application Run Session
             {
                 var storage = new FileVaultStorage(tempFile);
@@ -94,6 +102,9 @@ public static class Phase12IntegrationTests
 
                 authService.InitializeMasterPassword(masterPassword, masterPassword, out _);
                 var passwordService = new EncryptedPasswordService(authService, encryptionService, storage);
+
+                // Record baseline (includes seeded entries) before adding our entry
+                sessionOneCount = passwordService.GetAll().Count();
 
                 passwordService.Add(new PasswordEntry
                 {
@@ -121,9 +132,10 @@ public static class Phase12IntegrationTests
                 var passwordService = new EncryptedPasswordService(authService, encryptionService, storage);
                 var entries = passwordService.GetAll().ToList();
 
-                Assert(entries.Count == 1, "Persisted entry count must be 1.");
-                Assert(entries[0].Title == "AWS Console", "Persisted entry title must match 'AWS Console'.");
-                Assert(entries[0].Password == "CloudPassword777!", "Persisted entry password must match original.");
+                Assert(entries.Count == sessionOneCount + 1, "Persisted entry count must include all seeded and added entries.");
+                Assert(entries.Any(e => e.Title == "AWS Console"), "Persisted entry 'AWS Console' must exist after reopen.");
+                var awsEntry = entries.First(e => e.Title == "AWS Console");
+                Assert(awsEntry.Password == "CloudPassword777!", "Persisted entry password must match original.");
             }
         }
         finally
@@ -137,13 +149,17 @@ public static class Phase12IntegrationTests
         string tempFile = Path.Combine(Path.GetTempPath(), $"phase12_corrupt_{Guid.NewGuid():N}.dat");
         try
         {
-            // Create valid vault file
+            // Create valid vault file (EncryptedPasswordService writes vault on first seed/save)
             var storage = new FileVaultStorage(tempFile);
             var encryptionService = new AesGcmEncryptionService();
             var authService = new AuthenticationService(storage, encryptionService);
 
             authService.InitializeMasterPassword("ValidPass123!", "ValidPass123!", out _);
+            // Instantiate service to trigger vault file creation via seeding
+            _ = new EncryptedPasswordService(authService, encryptionService, storage);
             authService.Lock();
+
+            Assert(storage.VaultExists(), "Vault file must exist before corruption test.");
 
             // Corrupt file header on disk
             byte[] fileBytes = File.ReadAllBytes(tempFile);

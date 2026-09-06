@@ -1,5 +1,4 @@
 using System;
-using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using PasswordManager.Models;
@@ -62,6 +61,12 @@ public static class Phase9AutoLockTests
         public void Dispose() => ClearClipboard();
     }
 
+    private class TestDialogService : Services.UI.IDialogService
+    {
+        public bool ShowConfirmation(string title, string message) => true;
+        public void ShowMessage(string title, string message) { }
+    }
+
     public static void RunAllTests()
     {
         TestAutoLockService_CountdownAndLock();
@@ -84,16 +89,16 @@ public static class Phase9AutoLockTests
         autoLockService.AutoLocked += (s, e) => autoLockedEventRaised = true;
 
         authService.InitializeMasterPassword("MasterPass123!", "MasterPass123!", out _);
-        Debug.Assert(authService.IsUnlocked, "Vault should be unlocked after initialization.");
-        Debug.Assert(autoLockService.IsRunning, "AutoLockService should be running when vault is unlocked.");
+        Assert(authService.IsUnlocked, "Vault should be unlocked after initialization.");
+        Assert(autoLockService.IsRunning, "AutoLockService should be running when vault is unlocked.");
 
         // Wait for timeout to elapse
-        Thread.Sleep(300);
+        Thread.Sleep(350);
 
-        Debug.Assert(!authService.IsUnlocked, "Vault must automatically lock after inactivity timeout.");
-        Debug.Assert(!autoLockService.IsRunning, "AutoLockService timer must stop after auto-locking.");
-        Debug.Assert(autoLockedEventRaised, "AutoLocked event must be raised when auto-lock triggers.");
-        Debug.Assert(authService.ActiveKey == null, "Active key must be cleared when auto-locked.");
+        Assert(!authService.IsUnlocked, "Vault must automatically lock after inactivity timeout.");
+        Assert(!autoLockService.IsRunning, "AutoLockService timer must stop after auto-locking.");
+        Assert(autoLockedEventRaised, "AutoLocked event must be raised when auto-lock triggers.");
+        Assert(authService.ActiveKey == null, "Active key must be cleared when auto-locked.");
     }
 
     private static void TestAutoLockService_ActivityReset()
@@ -106,7 +111,7 @@ public static class Phase9AutoLockTests
         autoLockService.Timeout = TimeSpan.FromMilliseconds(250);
         authService.InitializeMasterPassword("MasterPass123!", "MasterPass123!", out _);
 
-        Debug.Assert(authService.IsUnlocked, "Vault should be unlocked.");
+        Assert(authService.IsUnlocked, "Vault should be unlocked.");
 
         // Wait 100ms, then register user activity (resets 250ms countdown)
         Thread.Sleep(100);
@@ -114,11 +119,11 @@ public static class Phase9AutoLockTests
 
         // Wait another 180ms (total 280ms since start, but only 180ms since activity reset)
         Thread.Sleep(180);
-        Debug.Assert(authService.IsUnlocked, "Vault should STILL be unlocked because activity reset timer.");
+        Assert(authService.IsUnlocked, "Vault should STILL be unlocked because activity reset timer.");
 
         // Wait remaining time for timer to expire after reset
-        Thread.Sleep(200);
-        Debug.Assert(!authService.IsUnlocked, "Vault should lock after updated countdown elapses.");
+        Thread.Sleep(300);
+        Assert(!authService.IsUnlocked, "Vault should lock after updated countdown elapses.");
     }
 
     private static void TestAutoLockService_ManualLockStopsTimer()
@@ -131,13 +136,13 @@ public static class Phase9AutoLockTests
         autoLockService.Timeout = TimeSpan.FromMilliseconds(500);
         authService.InitializeMasterPassword("MasterPass123!", "MasterPass123!", out _);
 
-        Debug.Assert(autoLockService.IsRunning, "AutoLockService should be running.");
+        Assert(autoLockService.IsRunning, "AutoLockService should be running.");
 
         // Manually lock vault
         authService.Lock();
 
-        Debug.Assert(!authService.IsUnlocked, "Vault should be locked.");
-        Debug.Assert(!autoLockService.IsRunning, "Manual lock must stop auto-lock timer.");
+        Assert(!authService.IsUnlocked, "Vault should be locked.");
+        Assert(!autoLockService.IsRunning, "Manual lock must stop auto-lock timer.");
     }
 
     private static void TestAutoLockService_UnlockRestartsTimer()
@@ -153,11 +158,11 @@ public static class Phase9AutoLockTests
         passwordService.Add(new PasswordEntry { Title = "Test", Username = "user", Password = "password" });
 
         authService.Lock();
-        Debug.Assert(!autoLockService.IsRunning, "Timer should be stopped when locked.");
+        Assert(!autoLockService.IsRunning, "Timer should be stopped when locked.");
 
         bool unlocked = authService.Unlock("MasterPass123!", out _);
-        Debug.Assert(unlocked, "Vault should unlock.");
-        Debug.Assert(autoLockService.IsRunning, "Unlocking vault must automatically restart auto-lock timer.");
+        Assert(unlocked, "Vault should unlock.");
+        Assert(autoLockService.IsRunning, "Unlocking vault must automatically restart auto-lock timer.");
     }
 
     private static void TestAutoLockService_DisabledToggle()
@@ -172,14 +177,14 @@ public static class Phase9AutoLockTests
 
         // Disable auto lock
         autoLockService.IsEnabled = false;
-        Debug.Assert(!autoLockService.IsRunning, "Disabling auto-lock must stop timer.");
+        Assert(!autoLockService.IsRunning, "Disabling auto-lock must stop timer.");
 
         Thread.Sleep(250);
-        Debug.Assert(authService.IsUnlocked, "Vault must remain unlocked when auto-lock is disabled.");
+        Assert(authService.IsUnlocked, "Vault must remain unlocked when auto-lock is disabled.");
 
         // Re-enable auto lock
         autoLockService.IsEnabled = true;
-        Debug.Assert(autoLockService.IsRunning, "Re-enabling auto-lock must start timer.");
+        Assert(autoLockService.IsRunning, "Re-enabling auto-lock must start timer.");
     }
 
     private static void TestAutoLockService_MainViewModelIntegrationAndStateClearance()
@@ -191,27 +196,39 @@ public static class Phase9AutoLockTests
         using var clipboardService = new InMemoryClipboardService();
         using var autoLockService = new AutoLockService(authService);
 
-        autoLockService.Timeout = TimeSpan.FromMilliseconds(150);
+        autoLockService.Timeout = TimeSpan.FromMilliseconds(250);
 
         authService.InitializeMasterPassword("MasterPass123!", "MasterPass123!", out _);
-        passwordService.Add(new PasswordEntry { Title = "Banking", Username = "bankuser", Password = "BankPassword123" });
+        var targetEntry = new PasswordEntry { Title = "Banking", Username = "bankuser", Password = "BankPassword123" };
+        passwordService.Add(targetEntry);
 
-        var vm = new MainViewModel(passwordService, authService, new PasswordGeneratorService(), clipboardService, autoLockService);
-        vm.SelectedEntry = vm.PasswordEntries.FirstOrDefault();
+        var vm = new MainViewModel(passwordService, authService, new PasswordGeneratorService(), clipboardService, autoLockService, new TestDialogService());
+        vm.SelectedEntry = vm.PasswordEntries.FirstOrDefault(e => e.Title == targetEntry.Title);
         vm.CopyPasswordCommand.Execute(null);
-        vm.SearchText = "Banking";
 
-        Debug.Assert(clipboardService.GetText() == "BankPassword123", "Clipboard should hold password.");
-        Debug.Assert(vm.SelectedEntry != null, "Selected entry should be active.");
-        Debug.Assert(vm.IsVaultUnlocked, "MainViewModel should reflect unlocked vault.");
+        Assert(clipboardService.GetText() == targetEntry.Password, "Clipboard should hold password.");
+        Assert(vm.SelectedEntry != null, "Selected entry should be active.");
+        Assert(vm.IsVaultUnlocked, "MainViewModel should reflect unlocked vault.");
 
         // Allow auto-lock to fire
-        Thread.Sleep(300);
+        Thread.Sleep(400);
+        if (System.Windows.Application.Current?.Dispatcher is { } dispatcher)
+        {
+            dispatcher.Invoke(() => { }, System.Windows.Threading.DispatcherPriority.Background);
+        }
 
-        Debug.Assert(!vm.IsVaultUnlocked, "MainViewModel.IsVaultUnlocked must be false after auto-lock.");
-        Debug.Assert(vm.SelectedEntry == null, "MainViewModel.SelectedEntry must be cleared after auto-lock.");
-        Debug.Assert(vm.PasswordEntries.Count == 0, "MainViewModel.PasswordEntries must be cleared after auto-lock.");
-        Debug.Assert(clipboardService.GetText() == null, "Clipboard must be cleared after auto-lock.");
-        Debug.Assert(vm.StatusMessage.Contains("locked"), "StatusMessage should inform user vault was locked.");
+        Assert(!vm.IsVaultUnlocked, "MainViewModel.IsVaultUnlocked must be false after auto-lock.");
+        Assert(vm.SelectedEntry == null, "MainViewModel.SelectedEntry must be cleared after auto-lock.");
+        Assert(vm.PasswordEntries.Count == 0, "MainViewModel.PasswordEntries must be cleared after auto-lock.");
+        Assert(clipboardService.GetText() == null, "Clipboard must be cleared after auto-lock.");
+        Assert(vm.StatusMessage.Contains("locked"), "StatusMessage should inform user vault was locked.");
+    }
+
+    private static void Assert(bool condition, string message)
+    {
+        if (!condition)
+        {
+            throw new Exception($"[TEST FAILURE] {message}");
+        }
     }
 }

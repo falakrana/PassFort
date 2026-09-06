@@ -42,6 +42,7 @@
                 <!-- Header Actions -->
                 <StackPanel Orientation="Horizontal" DockPanel.Dock="Right" HorizontalAlignment="Right"
                             Visibility="{Binding IsVaultUnlocked, Converter={StaticResource BoolToVis}}">
+                    <Button Content="⚙️ SETTINGS" Command="{Binding OpenSettingsCommand}" Style="{StaticResource SecondaryButtonStyle}" Padding="12,6" Margin="0,0,10,0"/>
                     <Button Content="🔒 LOCK VAULT (Ctrl+L)" Command="{Binding LockCommand}" Style="{StaticResource DangerButtonStyle}" Padding="12,6"/>
                 </StackPanel>
             </DockPanel>
@@ -424,6 +425,65 @@
                     <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
                         <ProgressBar IsIndeterminate="True" Width="180" Height="6" Foreground="#00FF41" Background="#060D06" Margin="0,0,0,12"/>
                         <TextBlock Text="{Binding BusyMessage}" FontSize="14" FontFamily="Consolas, Segoe UI" FontWeight="Bold" Foreground="#00FF41" HorizontalAlignment="Center"/>
+                    </StackPanel>
+                </Border>
+            </Border>
+
+            <!-- PROFILE / CHANGE MASTER PASSWORD SETTINGS OVERLAY -->
+            <Border Grid.ColumnSpan="2" Background="#EE060D06" CornerRadius="8"
+                    Visibility="{Binding IsSettingsOpen, Converter={StaticResource BoolToVis}}">
+                <Border Background="#0D1A0D" BorderBrush="#00FF41" BorderThickness="1" CornerRadius="8" Padding="28" Width="460" HorizontalAlignment="Center" VerticalAlignment="Center"
+                        Effect="{DynamicResource ModalShadow}">
+                    <StackPanel>
+                        <!-- Header -->
+                        <DockPanel Margin="0,0,0,18">
+                            <TextBlock Text="⚙️ PROFILE SETTINGS" FontSize="18" FontWeight="Bold" FontFamily="Consolas, Segoe UI" Foreground="#00FF41" VerticalAlignment="Center" DockPanel.Dock="Left"/>
+                            <Button Content="❌" Command="{Binding CloseSettingsCommand}" Style="{StaticResource SecondaryButtonStyle}" Padding="8,4" HorizontalAlignment="Right" DockPanel.Dock="Right"/>
+                        </DockPanel>
+
+                        <TextBlock Text="Change your master password to re-encrypt your vault." FontSize="12" FontFamily="Consolas, Segoe UI" Foreground="#4A7A4A" Margin="0,0,0,16"/>
+
+                        <!-- Error Message Banner -->
+                        <Border Background="#2B0000" BorderBrush="#FF2222" BorderThickness="1" CornerRadius="4" Padding="10" Margin="0,0,0,14"
+                                Visibility="{Binding ChangePasswordErrorMessage, Converter={StaticResource NullToVis}}">
+                            <TextBlock Text="{Binding ChangePasswordErrorMessage}" Foreground="#FF6666" FontFamily="Consolas, Segoe UI" FontSize="12" FontWeight="SemiBold" TextWrapping="Wrap"/>
+                        </Border>
+
+                        <!-- Success Message Banner -->
+                        <Border Background="#0B2B0B" BorderBrush="#00FF41" BorderThickness="1" CornerRadius="4" Padding="10" Margin="0,0,0,14"
+                                Visibility="{Binding ChangePasswordSuccessMessage, Converter={StaticResource NullToVis}}">
+                            <TextBlock Text="{Binding ChangePasswordSuccessMessage}" Foreground="#00FF41" FontFamily="Consolas, Segoe UI" FontSize="12" FontWeight="SemiBold" TextWrapping="Wrap"/>
+                        </Border>
+
+                        <!-- Current Master Password -->
+                        <TextBlock Text="CURRENT MASTER PASSWORD" FontSize="11" FontWeight="Bold" FontFamily="Consolas, Segoe UI" Foreground="#4A7A4A" Margin="0,0,0,4"/>
+                        <Border BorderBrush="#1A5C1A" BorderThickness="1" Background="#060D06" CornerRadius="4" Padding="4" Margin="0,0,0,12">
+                            <PasswordBox FontSize="14" FontFamily="Consolas, Segoe UI" Foreground="#C8FFC8" CaretBrush="#00FF41" Background="Transparent" BorderThickness="0" Padding="6,4"
+                                         helpers:PasswordBoxHelper.Attach="True"
+                                         helpers:PasswordBoxHelper.BoundPassword="{Binding CurrentMasterPassword, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                        </Border>
+
+                        <!-- New Master Password -->
+                        <TextBlock Text="NEW MASTER PASSWORD" FontSize="11" FontWeight="Bold" FontFamily="Consolas, Segoe UI" Foreground="#4A7A4A" Margin="0,0,0,4"/>
+                        <Border BorderBrush="#1A5C1A" BorderThickness="1" Background="#060D06" CornerRadius="4" Padding="4" Margin="0,0,0,12">
+                            <PasswordBox FontSize="14" FontFamily="Consolas, Segoe UI" Foreground="#C8FFC8" CaretBrush="#00FF41" Background="Transparent" BorderThickness="0" Padding="6,4"
+                                         helpers:PasswordBoxHelper.Attach="True"
+                                         helpers:PasswordBoxHelper.BoundPassword="{Binding NewMasterPassword, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                        </Border>
+
+                        <!-- Confirm New Master Password -->
+                        <TextBlock Text="CONFIRM NEW MASTER PASSWORD" FontSize="11" FontWeight="Bold" FontFamily="Consolas, Segoe UI" Foreground="#4A7A4A" Margin="0,0,0,4"/>
+                        <Border BorderBrush="#1A5C1A" BorderThickness="1" Background="#060D06" CornerRadius="4" Padding="4" Margin="0,0,0,20">
+                            <PasswordBox FontSize="14" FontFamily="Consolas, Segoe UI" Foreground="#C8FFC8" CaretBrush="#00FF41" Background="Transparent" BorderThickness="0" Padding="6,4"
+                                         helpers:PasswordBoxHelper.Attach="True"
+                                         helpers:PasswordBoxHelper.BoundPassword="{Binding ConfirmNewMasterPassword, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                        </Border>
+
+                        <!-- Action Buttons -->
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                            <Button Content="CANCEL" Command="{Binding CloseSettingsCommand}" Style="{StaticResource SecondaryButtonStyle}" Margin="0,0,10,0" Padding="14,8"/>
+                            <Button Content="🔑 CHANGE MASTER PASSWORD" Command="{Binding ChangeMasterPasswordCommand}" Style="{StaticResource PrimaryButtonStyle}" Padding="14,8"/>
+                        </StackPanel>
                     </StackPanel>
                 </Border>
             </Border>

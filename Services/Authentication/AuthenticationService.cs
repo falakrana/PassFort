@@ -152,4 +152,94 @@ public class AuthenticationService : IAuthenticationService
             LockStateChanged?.Invoke();
         }
     }
+
+    public bool ChangeMasterPassword(string currentPassword, string newPassword, string confirmNewPassword, out string? errorMessage)
+    {
+        if (!IsUnlocked || _activeKey == null || _activeSalt == null)
+        {
+            errorMessage = "Vault must be unlocked to change the master password.";
+            return false;
+        }
+
+        if (string.IsNullOrWhiteSpace(currentPassword))
+        {
+            errorMessage = "Current master password is required.";
+            return false;
+        }
+
+        if (string.IsNullOrWhiteSpace(newPassword))
+        {
+            errorMessage = "New master password cannot be empty.";
+            return false;
+        }
+
+        if (newPassword.Length < MinPasswordLength)
+        {
+            errorMessage = $"New master password must be at least {MinPasswordLength} characters long.";
+            return false;
+        }
+
+        if (!string.Equals(newPassword, confirmNewPassword, StringComparison.Ordinal))
+        {
+            errorMessage = "New passwords do not match.";
+            return false;
+        }
+
+        if (string.Equals(currentPassword, newPassword, StringComparison.Ordinal))
+        {
+            errorMessage = "New master password must be different from current master password.";
+            return false;
+        }
+
+        // Verify current password by deriving candidate key using active salt
+        byte[] candidateKey = _encryptionService.DeriveKey(currentPassword, _activeSalt);
+        try
+        {
+            if (!CryptographicOperations.FixedTimeEquals(candidateKey, _activeKey))
+            {
+                errorMessage = "Current master password is incorrect.";
+                return false;
+            }
+        }
+        finally
+        {
+            Array.Clear(candidateKey, 0, candidateKey.Length);
+        }
+
+        // Derive new key with fresh salt
+        byte[] newSalt = RandomNumberGenerator.GetBytes(SaltSizeBytes);
+        byte[] newKey = _encryptionService.DeriveKey(newPassword, newSalt);
+
+        try
+        {
+            if (_vaultStorage.VaultExists())
+            {
+                var oldPayload = _vaultStorage.ReadVault();
+                byte[] plaintext = _encryptionService.Decrypt(oldPayload, _activeKey);
+                try
+                {
+                    var newPayload = _encryptionService.Encrypt(plaintext, newKey, newSalt);
+                    _vaultStorage.WriteVault(newPayload);
+                }
+                finally
+                {
+                    Array.Clear(plaintext, 0, plaintext.Length);
+                }
+            }
+
+            // Swap active salt and key
+            if (_activeKey != null) Array.Clear(_activeKey, 0, _activeKey.Length);
+            _activeSalt = newSalt;
+            _activeKey = newKey;
+
+            errorMessage = null;
+            return true;
+        }
+        catch (Exception ex)
+        {
+            Array.Clear(newKey, 0, newKey.Length);
+            errorMessage = $"Failed to re-encrypt vault: {ex.Message}";
+            return false;
+        }
+    }
 }

@@ -22,6 +22,7 @@ public static class MasterPasswordTests
         Test_Unlock_CorrectPassword();
         Test_ManualLock();
         Test_LoginViewModel_Integration();
+        Test_ChangeMasterPassword_ValidationAndReencryption();
 
         Console.WriteLine("[PASS] All MasterPasswordTests completed successfully!");
     }
@@ -202,6 +203,42 @@ public static class MasterPasswordTests
 
             Assert(authenticatedFired, "Authenticated event should fire upon successful setup.");
             Assert(!vm.IsFirstRun, "IsFirstRun should be false after setup.");
+        }
+        finally
+        {
+            CleanupTempFile(tempFile);
+        }
+    }
+
+    private static void Test_ChangeMasterPassword_ValidationAndReencryption()
+    {
+        var (authService, tempFile) = CreateAuthService();
+        try
+        {
+            authService.InitializeMasterPassword("OldSecret123!", "OldSecret123!", out _);
+            var encryptionService = new AesGcmEncryptionService();
+            var storage = new FileVaultStorage(tempFile);
+            var passwordService = new EncryptedPasswordService(authService, encryptionService, storage);
+
+            // 1. Wrong current password fails
+            bool result1 = authService.ChangeMasterPassword("WrongOldPass!", "NewSecret123!", "NewSecret123!", out var err1);
+            Assert(!result1, "ChangeMasterPassword with wrong current password should fail.");
+            Assert(err1 == "Current master password is incorrect.", "Error message should indicate incorrect current password.");
+
+            // 2. Mismatched new passwords fail
+            bool result2 = authService.ChangeMasterPassword("OldSecret123!", "NewSecret123!", "MismatchPass123!", out var err2);
+            Assert(!result2, "ChangeMasterPassword with mismatched new passwords should fail.");
+            Assert(err2 == "New passwords do not match.", "Error message should indicate password mismatch.");
+
+            // 3. Successful change
+            bool result3 = authService.ChangeMasterPassword("OldSecret123!", "NewSecret123!", "NewSecret123!", out var err3);
+            Assert(result3, "ChangeMasterPassword with correct credentials should succeed.");
+            Assert(err3 == null, "Error message should be null on success.");
+
+            // 4. Lock & verify unlock works with new password and fails with old password
+            authService.Lock();
+            Assert(!authService.Unlock("OldSecret123!", out _), "Unlock with old password after change must fail.");
+            Assert(authService.Unlock("NewSecret123!", out _), "Unlock with new password after change must succeed.");
         }
         finally
         {

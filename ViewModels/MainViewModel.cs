@@ -48,6 +48,13 @@ public class MainViewModel : ViewModelBase
     private readonly ICollectionView _filteredEntries;
     private readonly object _entriesLock = new();
 
+    private bool _isSettingsOpen;
+    private string _currentMasterPassword = string.Empty;
+    private string _newMasterPassword = string.Empty;
+    private string _confirmNewMasterPassword = string.Empty;
+    private string? _changePasswordErrorMessage;
+    private string? _changePasswordSuccessMessage;
+
     public MainViewModel(
         IPasswordService passwordService,
         IAuthenticationService authService,
@@ -89,6 +96,9 @@ public class MainViewModel : ViewModelBase
         GeneratePasswordForEntryCommand = new RelayCommand(ExecuteGeneratePasswordForEntry, CanExecuteGeneratePasswordForEntry);
         CopyUsernameCommand = new RelayCommand(ExecuteCopyUsername, CanExecuteCopyUsername);
         CopyPasswordCommand = new RelayCommand(ExecuteCopyPassword, CanExecuteCopyPassword);
+        OpenSettingsCommand = new RelayCommand(ExecuteOpenSettings, CanExecuteOpenSettings);
+        CloseSettingsCommand = new RelayCommand(ExecuteCloseSettings);
+        ChangeMasterPasswordCommand = new RelayCommand(ExecuteChangeMasterPassword, CanExecuteChangeMasterPassword);
 
         if (IsVaultUnlocked)
         {
@@ -253,6 +263,42 @@ public class MainViewModel : ViewModelBase
         set => SetProperty(ref _validationMessage, value);
     }
 
+    public bool IsSettingsOpen
+    {
+        get => _isSettingsOpen;
+        set => SetProperty(ref _isSettingsOpen, value);
+    }
+
+    public string CurrentMasterPassword
+    {
+        get => _currentMasterPassword;
+        set => SetProperty(ref _currentMasterPassword, value);
+    }
+
+    public string NewMasterPassword
+    {
+        get => _newMasterPassword;
+        set => SetProperty(ref _newMasterPassword, value);
+    }
+
+    public string ConfirmNewMasterPassword
+    {
+        get => _confirmNewMasterPassword;
+        set => SetProperty(ref _confirmNewMasterPassword, value);
+    }
+
+    public string? ChangePasswordErrorMessage
+    {
+        get => _changePasswordErrorMessage;
+        set => SetProperty(ref _changePasswordErrorMessage, value);
+    }
+
+    public string? ChangePasswordSuccessMessage
+    {
+        get => _changePasswordSuccessMessage;
+        set => SetProperty(ref _changePasswordSuccessMessage, value);
+    }
+
     public ICommand AddNewCommand { get; }
     public ICommand EditCommand { get; }
     public ICommand SaveCommand { get; }
@@ -265,6 +311,9 @@ public class MainViewModel : ViewModelBase
     public ICommand GeneratePasswordForEntryCommand { get; }
     public ICommand CopyUsernameCommand { get; }
     public ICommand CopyPasswordCommand { get; }
+    public ICommand OpenSettingsCommand { get; }
+    public ICommand CloseSettingsCommand { get; }
+    public ICommand ChangeMasterPasswordCommand { get; }
 
     public void LoadEntries()
     {
@@ -366,6 +415,12 @@ public class MainViewModel : ViewModelBase
                 IsEditing = false;
                 IsPasswordVisible = false;
                 IsEditingPasswordVisible = false;
+                IsSettingsOpen = false;
+                CurrentMasterPassword = string.Empty;
+                NewMasterPassword = string.Empty;
+                ConfirmNewMasterPassword = string.Empty;
+                ChangePasswordErrorMessage = null;
+                ChangePasswordSuccessMessage = null;
                 SearchText = string.Empty;
                 SelectedCategoryFilter = "All";
                 lock (_entriesLock)
@@ -386,6 +441,49 @@ public class MainViewModel : ViewModelBase
         else
         {
             ClearState();
+        }
+    }
+
+    private bool CanExecuteOpenSettings() => IsVaultUnlocked;
+
+    private void ExecuteOpenSettings()
+    {
+        CurrentMasterPassword = string.Empty;
+        NewMasterPassword = string.Empty;
+        ConfirmNewMasterPassword = string.Empty;
+        ChangePasswordErrorMessage = null;
+        ChangePasswordSuccessMessage = null;
+        IsSettingsOpen = true;
+    }
+
+    private void ExecuteCloseSettings()
+    {
+        CurrentMasterPassword = string.Empty;
+        NewMasterPassword = string.Empty;
+        ConfirmNewMasterPassword = string.Empty;
+        ChangePasswordErrorMessage = null;
+        ChangePasswordSuccessMessage = null;
+        IsSettingsOpen = false;
+    }
+
+    private bool CanExecuteChangeMasterPassword() => IsVaultUnlocked && IsSettingsOpen;
+
+    private void ExecuteChangeMasterPassword()
+    {
+        ChangePasswordErrorMessage = null;
+        ChangePasswordSuccessMessage = null;
+
+        if (_authService.ChangeMasterPassword(CurrentMasterPassword, NewMasterPassword, ConfirmNewMasterPassword, out string? error))
+        {
+            CurrentMasterPassword = string.Empty;
+            NewMasterPassword = string.Empty;
+            ConfirmNewMasterPassword = string.Empty;
+            ChangePasswordSuccessMessage = "Master password changed successfully!";
+            StatusMessage = "Master password changed successfully.";
+        }
+        else
+        {
+            ChangePasswordErrorMessage = error;
         }
     }
 

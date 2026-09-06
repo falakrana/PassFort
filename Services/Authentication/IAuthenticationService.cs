@@ -54,4 +54,14 @@ public interface IAuthenticationService
     /// Manually locks the vault, revoking authenticated access.
     /// </summary>
     void Lock();
+
+    /// <summary>
+    /// Changes the master password, re-encrypting the vault payload with a newly derived key and fresh salt.
+    /// </summary>
+    /// <param name="currentPassword">The current master password for authentication verification.</param>
+    /// <param name="newPassword">The new master password to set.</param>
+    /// <param name="confirmNewPassword">Confirmation of the new master password.</param>
+    /// <param name="errorMessage">Output error message if operation fails validation or authentication.</param>
+    /// <returns>True if master password was successfully changed; false otherwise.</returns>
+    bool ChangeMasterPassword(string currentPassword, string newPassword, string confirmNewPassword, out string? errorMessage);
 }

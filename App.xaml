@@ -3,28 +3,31 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:local="clr-namespace:PasswordManager">
     <Application.Resources>
-        <!-- Modern Color Palette -->
-        <SolidColorBrush x:Key="PrimaryBrush" Color="#2563EB"/>
-        <SolidColorBrush x:Key="PrimaryHoverBrush" Color="#1D4ED8"/>
-        <SolidColorBrush x:Key="SecondaryBrush" Color="#E2E8F0"/>
-        <SolidColorBrush x:Key="SecondaryHoverBrush" Color="#CBD5E1"/>
-        <SolidColorBrush x:Key="DangerBrush" Color="#DC2626"/>
-        <SolidColorBrush x:Key="DangerHoverBrush" Color="#B91C1C"/>
-        <SolidColorBrush x:Key="BackgroundBrush" Color="#F8FAFC"/>
-        <SolidColorBrush x:Key="SurfaceBrush" Color="#FFFFFF"/>
-        <SolidColorBrush x:Key="TextPrimaryBrush" Color="#0F172A"/>
-        <SolidColorBrush x:Key="TextSecondaryBrush" Color="#64748B"/>
+        <!-- Hacker Green Color Palette -->
+        <SolidColorBrush x:Key="PrimaryBrush" Color="#00FF41"/>
+        <SolidColorBrush x:Key="PrimaryHoverBrush" Color="#39FF14"/>
+        <SolidColorBrush x:Key="SecondaryBrush" Color="#1A3D1A"/>
+        <SolidColorBrush x:Key="SecondaryHoverBrush" Color="#265926"/>
+        <SolidColorBrush x:Key="DangerBrush" Color="#FF2222"/>
+        <SolidColorBrush x:Key="DangerHoverBrush" Color="#D61818"/>
+        <SolidColorBrush x:Key="BackgroundBrush" Color="#060D06"/>
+        <SolidColorBrush x:Key="SurfaceBrush" Color="#0D1A0D"/>
+        <SolidColorBrush x:Key="TextPrimaryBrush" Color="#C8FFC8"/>
+        <SolidColorBrush x:Key="TextSecondaryBrush" Color="#4A7A4A"/>
+        <SolidColorBrush x:Key="BorderGreenBrush" Color="#00FF41"/>
 
-        <!-- Drop Shadows -->
-        <DropShadowEffect x:Key="CardShadow" BlurRadius="12" ShadowDepth="2" Direction="270" Color="#000000" Opacity="0.06"/>
-        <DropShadowEffect x:Key="ModalShadow" BlurRadius="24" ShadowDepth="6" Direction="270" Color="#000000" Opacity="0.15"/>
+        <!-- Green Glow Drop Shadows -->
+        <DropShadowEffect x:Key="CardShadow" BlurRadius="16" ShadowDepth="0" Direction="0" Color="#00FF41" Opacity="0.12"/>
+        <DropShadowEffect x:Key="GlowShadow" BlurRadius="20" ShadowDepth="0" Direction="0" Color="#00FF41" Opacity="0.4"/>
+        <DropShadowEffect x:Key="ModalShadow" BlurRadius="30" ShadowDepth="0" Direction="0" Color="#00FF41" Opacity="0.25"/>
 
-        <!-- Primary Button Style -->
+        <!-- Primary Button Style (Neon Green Accent) -->
         <Style x:Key="PrimaryButtonStyle" TargetType="Button">
             <Setter Property="Background" Value="{StaticResource PrimaryBrush}"/>
-            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="Foreground" Value="#000000"/>
+            <Setter Property="FontFamily" Value="Consolas, Segoe UI"/>
             <Setter Property="FontSize" Value="13"/>
-            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="FontWeight" Value="Bold"/>
             <Setter Property="Padding" Value="14,8"/>
             <Setter Property="Margin" Value="4"/>
             <Setter Property="BorderThickness" Value="0"/>
@@ -32,16 +35,17 @@
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="Button">
-                        <Border x:Name="border" Background="{TemplateBinding Background}" CornerRadius="6" Padding="{TemplateBinding Padding}">
+                        <Border x:Name="border" Background="{TemplateBinding Background}" CornerRadius="4" Padding="{TemplateBinding Padding}">
                             <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
                                 <Setter TargetName="border" Property="Background" Value="{StaticResource PrimaryHoverBrush}"/>
+                                <Setter TargetName="border" Property="Effect" Value="{StaticResource GlowShadow}"/>
                             </Trigger>
                             <Trigger Property="IsEnabled" Value="False">
-                                <Setter TargetName="border" Property="Background" Value="#9CA3AF"/>
-                                <Setter Property="Foreground" Value="#F3F4F6"/>
+                                <Setter TargetName="border" Property="Background" Value="#0F2B0F"/>
+                                <Setter Property="Foreground" Value="#2A5C2A"/>
                             </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
@@ -49,23 +53,33 @@
             </Setter>
         </Style>
 
-        <!-- Secondary Button Style -->
-        <Style x:Key="SecondaryButtonStyle" TargetType="Button" BasedOn="{StaticResource PrimaryButtonStyle}">
+        <!-- Secondary Button Style (Dark Forest Green with Green Border) -->
+        <Style x:Key="SecondaryButtonStyle" TargetType="Button">
             <Setter Property="Background" Value="{StaticResource SecondaryBrush}"/>
-            <Setter Property="Foreground" Value="#1E293B"/>
+            <Setter Property="Foreground" Value="#C8FFC8"/>
+            <Setter Property="FontFamily" Value="Consolas, Segoe UI"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Padding" Value="14,8"/>
+            <Setter Property="Margin" Value="4"/>
+            <Setter Property="BorderBrush" Value="#00FF41"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Cursor" Value="Hand"/>
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="Button">
-                        <Border x:Name="border" Background="{TemplateBinding Background}" CornerRadius="6" Padding="{TemplateBinding Padding}">
+                        <Border x:Name="border" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="4" Padding="{TemplateBinding Padding}">
                             <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
                                 <Setter TargetName="border" Property="Background" Value="{StaticResource SecondaryHoverBrush}"/>
+                                <Setter TargetName="border" Property="Effect" Value="{StaticResource CardShadow}"/>
                             </Trigger>
                             <Trigger Property="IsEnabled" Value="False">
-                                <Setter TargetName="border" Property="Background" Value="#E2E8F0"/>
-                                <Setter Property="Foreground" Value="#94A3B8"/>
+                                <Setter TargetName="border" Property="Background" Value="#0A1A0A"/>
+                                <Setter TargetName="border" Property="BorderBrush" Value="#1A3D1A"/>
+                                <Setter Property="Foreground" Value="#336633"/>
                             </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
@@ -73,13 +87,21 @@
             </Setter>
         </Style>
 
-        <!-- Danger Button Style -->
-        <Style x:Key="DangerButtonStyle" TargetType="Button" BasedOn="{StaticResource PrimaryButtonStyle}">
+        <!-- Danger Button Style (Glowing Red Accent) -->
+        <Style x:Key="DangerButtonStyle" TargetType="Button">
             <Setter Property="Background" Value="{StaticResource DangerBrush}"/>
+            <Setter Property="Foreground" Value="#FFFFFF"/>
+            <Setter Property="FontFamily" Value="Consolas, Segoe UI"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="Padding" Value="14,8"/>
+            <Setter Property="Margin" Value="4"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Cursor" Value="Hand"/>
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="Button">
-                        <Border x:Name="border" Background="{TemplateBinding Background}" CornerRadius="6" Padding="{TemplateBinding Padding}">
+                        <Border x:Name="border" Background="{TemplateBinding Background}" CornerRadius="4" Padding="{TemplateBinding Padding}">
                             <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
                         </Border>
                         <ControlTemplate.Triggers>
@@ -87,8 +109,8 @@
                                 <Setter TargetName="border" Property="Background" Value="{StaticResource DangerHoverBrush}"/>
                             </Trigger>
                             <Trigger Property="IsEnabled" Value="False">
-                                <Setter TargetName="border" Property="Background" Value="#FCA5A5"/>
-                                <Setter Property="Foreground" Value="#FFF"/>
+                                <Setter TargetName="border" Property="Background" Value="#4A0F0F"/>
+                                <Setter Property="Foreground" Value="#7A2A2A"/>
                             </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
@@ -96,24 +118,163 @@
             </Setter>
         </Style>
 
-        <!-- Form TextBox Style -->
+        <!-- Form TextBox Style (Hacker Terminal Theme) -->
         <Style x:Key="FormTextBoxStyle" TargetType="TextBox">
             <Setter Property="Padding" Value="10,8"/>
             <Setter Property="FontSize" Value="14"/>
-            <Setter Property="BorderBrush" Value="#CBD5E1"/>
+            <Setter Property="FontFamily" Value="Consolas, Segoe UI"/>
+            <Setter Property="Foreground" Value="#C8FFC8"/>
+            <Setter Property="CaretBrush" Value="#00FF41"/>
+            <Setter Property="BorderBrush" Value="#1A5C1A"/>
             <Setter Property="BorderThickness" Value="1"/>
             <Setter Property="Margin" Value="0,4,0,12"/>
-            <Setter Property="Background" Value="White"/>
+            <Setter Property="Background" Value="#060D06"/>
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="TextBox">
-                        <Border x:Name="border" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="6">
+                        <Border x:Name="border" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="4">
                             <ScrollViewer x:Name="PART_ContentHost" Focusable="false" HorizontalScrollBarVisibility="Hidden" VerticalScrollBarVisibility="Hidden"/>
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsFocused" Value="True">
-                                <Setter TargetName="border" Property="BorderBrush" Value="#2563EB"/>
+                                <Setter TargetName="border" Property="BorderBrush" Value="#00FF41"/>
                                 <Setter TargetName="border" Property="BorderThickness" Value="1.5"/>
+                                <Setter TargetName="border" Property="Effect" Value="{StaticResource CardShadow}"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- ComboBoxItem Style (Hacker Green Popup List Items) -->
+        <Style TargetType="ComboBoxItem">
+            <Setter Property="SnapsToDevicePixels" Value="True"/>
+            <Setter Property="Padding" Value="10,6"/>
+            <Setter Property="FontFamily" Value="Consolas, Segoe UI"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="Foreground" Value="#C8FFC8"/>
+            <Setter Property="Background" Value="#0D1A0D"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ComboBoxItem">
+                        <Border x:Name="Bd" Background="{TemplateBinding Background}" BorderBrush="Transparent" BorderThickness="0" Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Left" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsHighlighted" Value="True">
+                                <Setter TargetName="Bd" Property="Background" Value="#1A3D1A"/>
+                                <Setter Property="Foreground" Value="#00FF41"/>
+                            </Trigger>
+                            <Trigger Property="IsSelected" Value="True">
+                                <Setter TargetName="Bd" Property="Background" Value="#0F2B0F"/>
+                                <Setter Property="Foreground" Value="#00FF41"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- ComboBox Toggle Button Template -->
+        <ControlTemplate x:Key="ComboBoxToggleButton" TargetType="ToggleButton">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition />
+                    <ColumnDefinition Width="30" />
+                </Grid.ColumnDefinitions>
+                <Border x:Name="Border" Grid.ColumnSpan="2" CornerRadius="4" Background="#060D06" BorderBrush="#1A5C1A" BorderThickness="1"/>
+                <Path x:Name="Arrow" Grid.Column="1" Fill="#00FF41" HorizontalAlignment="Center" VerticalAlignment="Center" Data="M 0 0 L 4 4 L 8 0 Z"/>
+            </Grid>
+            <ControlTemplate.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter TargetName="Border" Property="BorderBrush" Value="#00FF41"/>
+                </Trigger>
+                <Trigger Property="IsChecked" Value="True">
+                    <Setter TargetName="Border" Property="BorderBrush" Value="#00FF41"/>
+                </Trigger>
+            </ControlTemplate.Triggers>
+        </ControlTemplate>
+
+        <!-- Global ComboBox Style (Hacker Green Terminal Dropdown) -->
+        <Style TargetType="ComboBox">
+            <Setter Property="SnapsToDevicePixels" Value="True"/>
+            <Setter Property="OverridesDefaultStyle" Value="True"/>
+            <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Auto"/>
+            <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Auto"/>
+            <Setter Property="ScrollViewer.CanContentScroll" Value="True"/>
+            <Setter Property="FontFamily" Value="Consolas, Segoe UI"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="Foreground" Value="#C8FFC8"/>
+            <Setter Property="Background" Value="#060D06"/>
+            <Setter Property="BorderBrush" Value="#1A5C1A"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="MinHeight" Value="32"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ComboBox">
+                        <Grid>
+                            <ToggleButton x:Name="ToggleButton" 
+                                          Template="{StaticResource ComboBoxToggleButton}" 
+                                          Grid.Column="2" 
+                                          Focusable="false" 
+                                          IsChecked="{Binding Path=IsDropDownOpen, Mode=TwoWay, RelativeSource={RelativeSource TemplatedParent}}" 
+                                          ClickMode="Press"/>
+                            <ContentPresenter x:Name="ContentSite" 
+                                              IsHitTestVisible="False" 
+                                              Content="{TemplateBinding SelectionBoxItem}" 
+                                              ContentTemplate="{TemplateBinding SelectionBoxItemTemplate}" 
+                                              ContentTemplateSelector="{TemplateBinding ItemTemplateSelector}" 
+                                              Margin="10,6,30,6" 
+                                              VerticalAlignment="Center" 
+                                              HorizontalAlignment="Left"/>
+                            <TextBox x:Name="PART_EditableTextBox"
+                                     Style="{x:Null}"
+                                     HorizontalAlignment="Left"
+                                     VerticalAlignment="Center"
+                                     Margin="10,6,30,6"
+                                     Focusable="True"
+                                     Background="Transparent"
+                                     Foreground="#C8FFC8"
+                                     FontFamily="Consolas, Segoe UI"
+                                     CaretBrush="#00FF41"
+                                     Visibility="Hidden"
+                                     IsReadOnly="{TemplateBinding IsReadOnly}"/>
+                            <Popup x:Name="Popup" 
+                                   Placement="Bottom" 
+                                   IsOpen="{TemplateBinding IsDropDownOpen}" 
+                                   AllowsTransparency="True" 
+                                   Focusable="False" 
+                                   PopupAnimation="Slide">
+                                <Grid x:Name="DropDown" 
+                                      SnapsToDevicePixels="True" 
+                                      MinWidth="{TemplateBinding ActualWidth}" 
+                                      MaxHeight="{TemplateBinding MaxDropDownHeight}">
+                                    <Border x:Name="DropDownBorder" 
+                                            Background="#0D1A0D" 
+                                            BorderThickness="1" 
+                                            BorderBrush="#00FF41" 
+                                            CornerRadius="4" 
+                                            Margin="0,2,0,0"
+                                            Effect="{StaticResource ModalShadow}">
+                                        <ScrollViewer Margin="2" SnapsToDevicePixels="True">
+                                            <StackPanel IsItemsHost="True" KeyboardNavigation.DirectionalNavigation="Contained"/>
+                                        </ScrollViewer>
+                                    </Border>
+                                </Grid>
+                            </Popup>
+                        </Grid>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="HasItems" Value="False">
+                                <Setter TargetName="DropDownBorder" Property="MinHeight" Value="50"/>
+                            </Trigger>
+                            <Trigger Property="IsGrouping" Value="True">
+                                <Setter Property="ScrollViewer.CanContentScroll" Value="False"/>
+                            </Trigger>
+                            <Trigger Property="IsEditable" Value="True">
+                                <Setter Property="IsTabStop" Value="False"/>
+                                <Setter TargetName="PART_EditableTextBox" Property="Visibility" Value="Visible"/>
+                                <Setter TargetName="ContentSite" Property="Visibility" Value="Hidden"/>
                             </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>

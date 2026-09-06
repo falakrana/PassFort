@@ -15,7 +15,7 @@
         <helpers:InverseNullToVisibilityConverter x:Key="InvNullToVis"/>
     </UserControl.Resources>
 
-    <Grid Background="#F8FAFC">
+    <Grid Background="#060D06">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
@@ -23,18 +23,18 @@
         </Grid.RowDefinitions>
 
         <!-- TOP NAVIGATION HEADER -->
-        <Border Grid.Row="0" Background="#1E293B" Padding="20,14">
+        <Border Grid.Row="0" Background="#020A02" BorderBrush="#1A5C1A" BorderThickness="0,0,0,1" Padding="20,14">
             <DockPanel>
                 <StackPanel Orientation="Horizontal" DockPanel.Dock="Left">
                     <TextBlock Text="🛡️ " FontSize="22" VerticalAlignment="Center"/>
-                    <TextBlock Text="{Binding Title}" Foreground="White" FontSize="18" FontWeight="Bold" VerticalAlignment="Center"/>
+                    <TextBlock Text="{Binding Title}" Foreground="#00FF41" FontFamily="Consolas, Segoe UI" FontSize="18" FontWeight="Bold" VerticalAlignment="Center"/>
                     
                     <!-- Passwords Count Counter Badge -->
-                    <Border Background="#334155" CornerRadius="12" Padding="10,4" Margin="14,0,0,0" VerticalAlignment="Center"
+                    <Border Background="#0F2B0F" BorderBrush="#00FF41" BorderThickness="1" CornerRadius="12" Padding="10,4" Margin="14,0,0,0" VerticalAlignment="Center"
                             Visibility="{Binding IsVaultUnlocked, Converter={StaticResource BoolToVis}}">
                         <StackPanel Orientation="Horizontal">
-                            <TextBlock Text="{Binding TotalEntriesCount}" Foreground="#38BDF8" FontWeight="Bold" FontSize="12"/>
-                            <TextBlock Text=" Passwords" Foreground="#94A3B8" FontSize="12" Margin="3,0,0,0"/>
+                            <TextBlock Text="{Binding TotalEntriesCount}" Foreground="#00FF41" FontFamily="Consolas, Segoe UI" FontWeight="Bold" FontSize="12"/>
+                            <TextBlock Text=" PASSWORDS" Foreground="#4A7A4A" FontFamily="Consolas, Segoe UI" FontSize="11" Margin="4,0,0,0"/>
                         </StackPanel>
                     </Border>
                 </StackPanel>
@@ -42,7 +42,7 @@
                 <!-- Header Actions -->
                 <StackPanel Orientation="Horizontal" DockPanel.Dock="Right" HorizontalAlignment="Right"
                             Visibility="{Binding IsVaultUnlocked, Converter={StaticResource BoolToVis}}">
-                    <Button Content="🔒 Lock Vault (Ctrl+L)" Command="{Binding LockCommand}" Style="{StaticResource DangerButtonStyle}" Padding="12,6"/>
+                    <Button Content="🔒 LOCK VAULT (Ctrl+L)" Command="{Binding LockCommand}" Style="{StaticResource DangerButtonStyle}" Padding="12,6"/>
                 </StackPanel>
             </DockPanel>
         </Border>
@@ -60,7 +60,7 @@
             </Grid.ColumnDefinitions>
 
             <!-- LEFT SIDEBAR: Search, Category Filter & Password List -->
-            <Border Grid.Column="0" Background="White" CornerRadius="12" Padding="16" Margin="0,0,16,0" BorderBrush="#E2E8F0" BorderThickness="1"
+            <Border Grid.Column="0" Background="#0D1A0D" CornerRadius="8" Padding="16" Margin="0,0,16,0" BorderBrush="#1A5C1A" BorderThickness="1"
                     Effect="{DynamicResource CardShadow}">
                 <Grid>
                     <Grid.RowDefinitions>
@@ -71,7 +71,7 @@
                     </Grid.RowDefinitions>
 
                     <!-- Add New Password Button (Ctrl+N) -->
-                    <Button Grid.Row="0" Content="➕ Add New Password (Ctrl+N)" Command="{Binding AddNewCommand}" Style="{StaticResource PrimaryButtonStyle}" Margin="0,0,0,12"/>
+                    <Button Grid.Row="0" Content="➕ ADD NEW PASSWORD (Ctrl+N)" Command="{Binding AddNewCommand}" Style="{StaticResource PrimaryButtonStyle}" Margin="0,0,0,12"/>
 
                     <!-- Search Input Box (Ctrl+F) -->
                     <Grid Grid.Row="1" Margin="0,0,0,10">
@@ -87,7 +87,8 @@
                         <!-- Watermark Overlay when empty -->
                         <TextBlock Grid.Column="0" 
                                    Text="🔍 Search entries... (Ctrl+F)" 
-                                   Foreground="#94A3B8" 
+                                   Foreground="#2A5C2A" 
+                                   FontFamily="Consolas, Segoe UI"
                                    FontSize="13" 
                                    VerticalAlignment="Center" 
                                    Margin="12,0,0,0" 
@@ -104,12 +105,14 @@
 
                     <!-- Category Filter Dropdown -->
                     <DockPanel Grid.Row="2" Margin="0,0,0,12">
-                        <TextBlock Text="Category: " FontSize="12" FontWeight="SemiBold" Foreground="#64748B" VerticalAlignment="Center" DockPanel.Dock="Left"/>
+                        <TextBlock Text="CATEGORY: " FontSize="11" FontWeight="Bold" FontFamily="Consolas, Segoe UI" Foreground="#4A7A4A" VerticalAlignment="Center" DockPanel.Dock="Left"/>
                         <ComboBox ItemsSource="{Binding CategoriesFilterList}" 
                                   SelectedItem="{Binding SelectedCategoryFilter}" 
                                   Padding="8,6" 
                                   FontSize="13" 
-                                  Background="White"/>
+                                  FontFamily="Consolas, Segoe UI"
+                                  Foreground="#C8FFC8"
+                                  Background="#060D06"/>
                     </DockPanel>
 
                     <!-- PASSWORD ENTRIES CONTAINER (List or Empty States) -->
@@ -128,16 +131,18 @@
                                         <Setter Property="Template">
                                             <Setter.Value>
                                                 <ControlTemplate TargetType="ListBoxItem">
-                                                    <Border x:Name="ItemBorder" Background="#F8FAFC" BorderBrush="#E2E8F0" BorderThickness="1" CornerRadius="8" Padding="12">
+                                                    <Border x:Name="ItemBorder" Background="#0A1A0A" BorderBrush="#1A3D1A" BorderThickness="1" CornerRadius="4" Padding="12">
                                                         <ContentPresenter/>
                                                     </Border>
                                                     <ControlTemplate.Triggers>
                                                         <Trigger Property="IsSelected" Value="True">
-                                                            <Setter TargetName="ItemBorder" Property="Background" Value="#EFF6FF"/>
-                                                            <Setter TargetName="ItemBorder" Property="BorderBrush" Value="#3B82F6"/>
+                                                            <Setter TargetName="ItemBorder" Property="Background" Value="#0F2B0F"/>
+                                                            <Setter TargetName="ItemBorder" Property="BorderBrush" Value="#00FF41"/>
+                                                            <Setter TargetName="ItemBorder" Property="Effect" Value="{StaticResource CardShadow}"/>
                                                         </Trigger>
                                                         <Trigger Property="IsMouseOver" Value="True">
-                                                            <Setter TargetName="ItemBorder" Property="Background" Value="#F1F5F9"/>
+                                                            <Setter TargetName="ItemBorder" Property="Background" Value="#112B11"/>
+                                                            <Setter TargetName="ItemBorder" Property="BorderBrush" Value="#265926"/>
                                                         </Trigger>
                                                     </ControlTemplate.Triggers>
                                                 </ControlTemplate>
@@ -149,12 +154,12 @@
                                 <ListBox.ItemTemplate>
                                     <DataTemplate>
                                         <DockPanel>
-                                            <Border DockPanel.Dock="Right" Background="#E2E8F0" CornerRadius="4" Padding="6,2" VerticalAlignment="Center">
-                                                <TextBlock Text="{Binding Category}" FontSize="10" FontWeight="SemiBold" Foreground="#475569"/>
+                                            <Border DockPanel.Dock="Right" Background="#0F2B0F" BorderBrush="#00FF41" BorderThickness="1" CornerRadius="4" Padding="6,2" VerticalAlignment="Center">
+                                                <TextBlock Text="{Binding Category}" FontSize="10" FontFamily="Consolas, Segoe UI" FontWeight="Bold" Foreground="#00FF41"/>
                                             </Border>
                                             <StackPanel VerticalAlignment="Center">
-                                                <TextBlock Text="{Binding Title}" FontWeight="Bold" FontSize="14" Foreground="#1E293B"/>
-                                                <TextBlock Text="{Binding Username}" FontSize="12" Foreground="#64748B" Margin="0,2,0,0"/>
+                                                <TextBlock Text="{Binding Title}" FontWeight="Bold" FontFamily="Consolas, Segoe UI" FontSize="14" Foreground="#C8FFC8"/>
+                                                <TextBlock Text="{Binding Username}" FontSize="12" FontFamily="Consolas, Segoe UI" Foreground="#4A7A4A" Margin="0,2,0,0"/>
                                             </StackPanel>
                                         </DockPanel>
                                     </DataTemplate>
@@ -163,27 +168,27 @@
                         </ScrollViewer>
 
                         <!-- EMPTY STATE 1: EMPTY VAULT (0 items in vault) -->
-                        <Border Background="#F8FAFC" CornerRadius="8" BorderBrush="#E2E8F0" BorderThickness="1" Padding="20"
+                        <Border Background="#0A1A0A" CornerRadius="6" BorderBrush="#1A5C1A" BorderThickness="1" Padding="20"
                                 VerticalAlignment="Center" HorizontalAlignment="Stretch"
                                 Visibility="{Binding IsEmptyVault, Converter={StaticResource BoolToVis}}">
                             <StackPanel HorizontalAlignment="Center">
                                 <TextBlock Text="📂" FontSize="36" HorizontalAlignment="Center" Margin="0,0,0,10"/>
-                                <TextBlock Text="Vault is Empty" FontSize="16" FontWeight="Bold" Foreground="#1E293B" HorizontalAlignment="Center" Margin="0,0,0,6"/>
+                                <TextBlock Text="VAULT IS EMPTY" FontSize="15" FontWeight="Bold" FontFamily="Consolas, Segoe UI" Foreground="#00FF41" HorizontalAlignment="Center" Margin="0,0,0,6"/>
                                 <TextBlock Text="You don't have any saved passwords yet. Click below to add your first entry."
-                                           FontSize="12" Foreground="#64748B" TextAlignment="Center" TextWrapping="Wrap" Margin="0,0,0,14"/>
+                                           FontSize="12" FontFamily="Consolas, Segoe UI" Foreground="#4A7A4A" TextAlignment="Center" TextWrapping="Wrap" Margin="0,0,0,14"/>
                                 <Button Content="➕ Add First Password" Command="{Binding AddNewCommand}" Style="{StaticResource PrimaryButtonStyle}" HorizontalAlignment="Center"/>
                             </StackPanel>
                         </Border>
 
                         <!-- EMPTY STATE 2: NO SEARCH RESULTS (0 items matching search/filter) -->
-                        <Border Background="#F8FAFC" CornerRadius="8" BorderBrush="#E2E8F0" BorderThickness="1" Padding="20"
+                        <Border Background="#0A1A0A" CornerRadius="6" BorderBrush="#1A5C1A" BorderThickness="1" Padding="20"
                                 VerticalAlignment="Center" HorizontalAlignment="Stretch"
                                 Visibility="{Binding IsSearchEmpty, Converter={StaticResource BoolToVis}}">
                             <StackPanel HorizontalAlignment="Center">
                                 <TextBlock Text="🔍" FontSize="36" HorizontalAlignment="Center" Margin="0,0,0,10"/>
-                                <TextBlock Text="No Entries Found" FontSize="16" FontWeight="Bold" Foreground="#1E293B" HorizontalAlignment="Center" Margin="0,0,0,6"/>
+                                <TextBlock Text="NO ENTRIES FOUND" FontSize="15" FontWeight="Bold" FontFamily="Consolas, Segoe UI" Foreground="#00FF41" HorizontalAlignment="Center" Margin="0,0,0,6"/>
                                 <TextBlock Text="No passwords match your search query or category filter."
-                                           FontSize="12" Foreground="#64748B" TextAlignment="Center" TextWrapping="Wrap" Margin="0,0,0,14"/>
+                                           FontSize="12" FontFamily="Consolas, Segoe UI" Foreground="#4A7A4A" TextAlignment="Center" TextWrapping="Wrap" Margin="0,0,0,14"/>
                                 <Button Content="❌ Clear Search Filter" Command="{Binding ClearSearchCommand}" Style="{StaticResource SecondaryButtonStyle}" HorizontalAlignment="Center"/>
                             </StackPanel>
                         </Border>
@@ -212,39 +217,39 @@
                     </Grid.Style>
 
                     <ScrollViewer VerticalScrollBarVisibility="Auto">
-                        <Border Background="White" CornerRadius="12" Padding="28" BorderBrush="#E2E8F0" BorderThickness="1"
+                        <Border Background="#0D1A0D" CornerRadius="8" Padding="28" BorderBrush="#1A5C1A" BorderThickness="1"
                                 Effect="{DynamicResource CardShadow}">
                             <StackPanel>
                                 <!-- Top Bar of Detail Card -->
                                 <DockPanel Margin="0,0,0,20">
                                     <StackPanel Orientation="Horizontal" DockPanel.Dock="Left">
-                                        <TextBlock Text="{Binding SelectedEntry.Title}" FontSize="22" FontWeight="Bold" Foreground="#0F172A" VerticalAlignment="Center"/>
-                                        <Border Background="#E0F2FE" CornerRadius="6" Padding="10,4" Margin="12,0,0,0" VerticalAlignment="Center">
-                                            <TextBlock Text="{Binding SelectedEntry.Category}" FontSize="12" FontWeight="SemiBold" Foreground="#0369A1"/>
+                                        <TextBlock Text="{Binding SelectedEntry.Title}" FontSize="22" FontWeight="Bold" FontFamily="Consolas, Segoe UI" Foreground="#00FF41" VerticalAlignment="Center"/>
+                                        <Border Background="#0F2B0F" BorderBrush="#00FF41" BorderThickness="1" CornerRadius="4" Padding="10,4" Margin="12,0,0,0" VerticalAlignment="Center">
+                                            <TextBlock Text="{Binding SelectedEntry.Category, StringFormat='[{0}]'}" FontSize="12" FontFamily="Consolas, Segoe UI" FontWeight="Bold" Foreground="#00FF41"/>
                                         </Border>
                                     </StackPanel>
 
                                     <StackPanel Orientation="Horizontal" DockPanel.Dock="Right" HorizontalAlignment="Right">
-                                        <Button Content="✏️ Edit" Command="{Binding EditCommand}" Style="{StaticResource SecondaryButtonStyle}" Margin="0,0,8,0"/>
-                                        <Button Content="🗑️ Delete" Command="{Binding DeleteCommand}" Style="{StaticResource DangerButtonStyle}"/>
+                                        <Button Content="✏️ EDIT" Command="{Binding EditCommand}" Style="{StaticResource SecondaryButtonStyle}" Margin="0,0,8,0"/>
+                                        <Button Content="🗑️ DELETE" Command="{Binding DeleteCommand}" Style="{StaticResource DangerButtonStyle}"/>
                                     </StackPanel>
                                 </DockPanel>
 
-                                <Separator Background="#E2E8F0" Margin="0,0,0,20"/>
+                                <Separator Background="#1A5C1A" Margin="0,0,0,20"/>
 
                                 <!-- Username Field -->
-                                <TextBlock Text="USERNAME / EMAIL" FontSize="11" FontWeight="Bold" Foreground="#64748B" Margin="0,0,0,4"/>
+                                <TextBlock Text=">_ USERNAME / EMAIL" FontSize="11" FontWeight="Bold" FontFamily="Consolas, Segoe UI" Foreground="#4A7A4A" Margin="0,0,0,4"/>
                                 <Grid Margin="0,0,0,18">
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="*"/>
                                         <ColumnDefinition Width="Auto"/>
                                     </Grid.ColumnDefinitions>
-                                    <TextBox Grid.Column="0" Text="{Binding SelectedEntry.Username, Mode=OneWay}" IsReadOnly="True" BorderThickness="0" Background="Transparent" FontSize="16" Foreground="#0F172A" VerticalAlignment="Center"/>
-                                    <Button Grid.Column="1" Content="📋 Copy Username" Command="{Binding CopyUsernameCommand}" Style="{StaticResource SecondaryButtonStyle}"/>
+                                    <TextBox Grid.Column="0" Text="{Binding SelectedEntry.Username, Mode=OneWay}" IsReadOnly="True" BorderThickness="0" Background="Transparent" FontSize="16" FontFamily="Consolas, Segoe UI" Foreground="#C8FFC8" VerticalAlignment="Center"/>
+                                    <Button Grid.Column="1" Content="📋 COPY USERNAME" Command="{Binding CopyUsernameCommand}" Style="{StaticResource SecondaryButtonStyle}"/>
                                 </Grid>
 
                                 <!-- Password Field with Masking Toggle and Copy -->
-                                <TextBlock Text="PASSWORD" FontSize="11" FontWeight="Bold" Foreground="#64748B" Margin="0,0,0,4"/>
+                                <TextBlock Text=">_ PASSWORD" FontSize="11" FontWeight="Bold" FontFamily="Consolas, Segoe UI" Foreground="#4A7A4A" Margin="0,0,0,4"/>
                                 <Grid Margin="0,0,0,18">
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="*"/>
@@ -252,34 +257,34 @@
                                     </Grid.ColumnDefinitions>
 
                                     <!-- Masked Password -->
-                                    <TextBlock Grid.Column="0" Text="••••••••••••••••" FontSize="16" FontWeight="Bold" Foreground="#0F172A" VerticalAlignment="Center"
+                                    <TextBlock Grid.Column="0" Text="••••••••••••••••" FontSize="16" FontWeight="Bold" FontFamily="Consolas, Segoe UI" Foreground="#4A7A4A" VerticalAlignment="Center"
                                                Visibility="{Binding IsPasswordVisible, Converter={StaticResource InvBoolToVis}}"/>
 
                                     <!-- Unmasked Password -->
-                                    <TextBox Grid.Column="0" Text="{Binding SelectedEntry.Password, Mode=OneWay}" IsReadOnly="True" BorderThickness="0" Background="Transparent" FontSize="16" FontWeight="Bold" Foreground="#2563EB" VerticalAlignment="Center"
+                                    <TextBox Grid.Column="0" Text="{Binding SelectedEntry.Password, Mode=OneWay}" IsReadOnly="True" BorderThickness="0" Background="Transparent" FontSize="16" FontWeight="Bold" FontFamily="Consolas, Segoe UI" Foreground="#00FF41" VerticalAlignment="Center"
                                              Visibility="{Binding IsPasswordVisible, Converter={StaticResource BoolToVis}}"/>
 
                                     <StackPanel Grid.Column="1" Orientation="Horizontal">
                                         <Button Content="{Binding IsPasswordVisible, Converter={StaticResource InvBoolToVis}, StringFormat='👁️ Show', ConverterParameter='👁️ Hide'}" 
                                                 Command="{Binding TogglePasswordVisibilityCommand}" Style="{StaticResource SecondaryButtonStyle}" Margin="0,0,8,0"/>
-                                        <Button Content="📋 Copy Password" Command="{Binding CopyPasswordCommand}" Style="{StaticResource PrimaryButtonStyle}"/>
+                                        <Button Content="📋 COPY PASSWORD" Command="{Binding CopyPasswordCommand}" Style="{StaticResource PrimaryButtonStyle}"/>
                                     </StackPanel>
                                 </Grid>
 
                                 <!-- Website Field -->
-                                <TextBlock Text="WEBSITE URL" FontSize="11" FontWeight="Bold" Foreground="#64748B" Margin="0,0,0,4"/>
-                                <TextBox Text="{Binding SelectedEntry.WebsiteUrl, Mode=OneWay}" IsReadOnly="True" BorderThickness="0" Background="Transparent" FontSize="14" Foreground="#2563EB" Margin="0,0,0,18"/>
+                                <TextBlock Text=">_ WEBSITE URL" FontSize="11" FontWeight="Bold" FontFamily="Consolas, Segoe UI" Foreground="#4A7A4A" Margin="0,0,0,4"/>
+                                <TextBox Text="{Binding SelectedEntry.WebsiteUrl, Mode=OneWay}" IsReadOnly="True" BorderThickness="0" Background="Transparent" FontSize="14" FontFamily="Consolas, Segoe UI" Foreground="#00FF41" Margin="0,0,0,18"/>
 
                                 <!-- Notes Field -->
-                                <TextBlock Text="NOTES" FontSize="11" FontWeight="Bold" Foreground="#64748B" Margin="0,0,0,4"/>
-                                <Border Background="#F8FAFC" CornerRadius="6" Padding="14" Margin="0,0,0,18" BorderBrush="#E2E8F0" BorderThickness="1">
-                                    <TextBlock Text="{Binding SelectedEntry.Notes}" FontSize="13" Foreground="#334155" TextWrapping="Wrap"/>
+                                <TextBlock Text=">_ NOTES" FontSize="11" FontWeight="Bold" FontFamily="Consolas, Segoe UI" Foreground="#4A7A4A" Margin="0,0,0,4"/>
+                                <Border Background="#060D06" CornerRadius="4" Padding="14" Margin="0,0,0,18" BorderBrush="#1A5C1A" BorderThickness="1">
+                                    <TextBlock Text="{Binding SelectedEntry.Notes}" FontSize="13" FontFamily="Consolas, Segoe UI" Foreground="#C8FFC8" TextWrapping="Wrap"/>
                                 </Border>
 
                                 <!-- Timestamps -->
                                 <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
-                                    <TextBlock Text="Created: " FontSize="11" Foreground="#94A3B8"/>
-                                    <TextBlock Text="{Binding SelectedEntry.CreatedAt, StringFormat={}{0:g}}" FontSize="11" Foreground="#94A3B8"/>
+                                    <TextBlock Text="CREATED: " FontSize="11" FontFamily="Consolas, Segoe UI" Foreground="#2A5C2A"/>
+                                    <TextBlock Text="{Binding SelectedEntry.CreatedAt, StringFormat={}{0:g}}" FontSize="11" FontFamily="Consolas, Segoe UI" Foreground="#2A5C2A"/>
                                 </StackPanel>
                             </StackPanel>
                         </Border>
@@ -303,39 +308,39 @@
                     </Grid.Style>
 
                     <ScrollViewer VerticalScrollBarVisibility="Auto">
-                        <Border Background="White" CornerRadius="12" Padding="28" BorderBrush="#E2E8F0" BorderThickness="1"
+                        <Border Background="#0D1A0D" CornerRadius="8" Padding="28" BorderBrush="#1A5C1A" BorderThickness="1"
                                 Effect="{DynamicResource CardShadow}">
                             <StackPanel>
-                                <TextBlock Text="Add New Password Entry" 
-                                           FontSize="20" FontWeight="Bold" Foreground="#0F172A" Margin="0,0,0,15"
+                                <TextBlock Text=">_ ADD NEW PASSWORD ENTRY" 
+                                           FontSize="18" FontWeight="Bold" FontFamily="Consolas, Segoe UI" Foreground="#00FF41" Margin="0,0,0,15"
                                            Visibility="{Binding IsAdding, Converter={StaticResource BoolToVis}}"/>
 
-                                <TextBlock Text="Edit Password Entry" 
-                                           FontSize="20" FontWeight="Bold" Foreground="#0F172A" Margin="0,0,0,15"
+                                <TextBlock Text=">_ EDIT PASSWORD ENTRY" 
+                                           FontSize="18" FontWeight="Bold" FontFamily="Consolas, Segoe UI" Foreground="#00FF41" Margin="0,0,0,15"
                                            Visibility="{Binding IsEditing, Converter={StaticResource BoolToVis}}"/>
 
                                 <!-- Validation Error Alert -->
-                                <Border Background="#FEF2F2" BorderBrush="#FCA5A5" BorderThickness="1" CornerRadius="6" Padding="12" Margin="0,0,0,16"
+                                <Border Background="#2B0000" BorderBrush="#FF2222" BorderThickness="1" CornerRadius="4" Padding="12" Margin="0,0,0,16"
                                         Visibility="{Binding ValidationMessage, Converter={StaticResource NullToVis}}">
                                     <StackPanel Orientation="Horizontal">
                                         <TextBlock Text="⚠️ " FontSize="14" VerticalAlignment="Center"/>
-                                        <TextBlock Text="{Binding ValidationMessage}" Foreground="#991B1B" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                                        <TextBlock Text="{Binding ValidationMessage}" Foreground="#FF6666" FontFamily="Consolas, Segoe UI" FontWeight="SemiBold" VerticalAlignment="Center"/>
                                     </StackPanel>
                                 </Border>
 
                                 <!-- Form Inputs -->
-                                <TextBlock Text="Title *" FontSize="12" FontWeight="SemiBold" Foreground="#334155"/>
+                                <TextBlock Text="Title *" FontSize="11" FontWeight="Bold" FontFamily="Consolas, Segoe UI" Foreground="#4A7A4A"/>
                                 <TextBox Text="{Binding EditingEntry.Title, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource FormTextBoxStyle}"/>
 
-                                <TextBlock Text="Username / Email" FontSize="12" FontWeight="SemiBold" Foreground="#334155"/>
+                                <TextBlock Text="Username / Email" FontSize="11" FontWeight="Bold" FontFamily="Consolas, Segoe UI" Foreground="#4A7A4A"/>
                                 <TextBox Text="{Binding EditingEntry.Username, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource FormTextBoxStyle}"/>
 
                                 <!-- Password Field with Toggle and Auto Generator Button -->
                                 <DockPanel Margin="0,0,0,4">
-                                    <TextBlock Text="Password *" FontSize="12" FontWeight="SemiBold" Foreground="#334155" DockPanel.Dock="Left"/>
+                                    <TextBlock Text="Password *" FontSize="11" FontWeight="Bold" FontFamily="Consolas, Segoe UI" Foreground="#4A7A4A" DockPanel.Dock="Left"/>
                                     <Button Content="{Binding IsEditingPasswordVisible, Converter={StaticResource InvBoolToVis}, StringFormat='👁️ Show', ConverterParameter='👁️ Hide'}"
                                             Command="{Binding ToggleEditingPasswordVisibilityCommand}"
-                                            Foreground="#2563EB" Background="Transparent" BorderThickness="0" FontSize="11" FontWeight="SemiBold" Cursor="Hand" DockPanel.Dock="Right" HorizontalAlignment="Right"/>
+                                            Foreground="#00FF41" Background="Transparent" BorderThickness="0" FontSize="11" FontFamily="Consolas, Segoe UI" FontWeight="Bold" Cursor="Hand" DockPanel.Dock="Right" HorizontalAlignment="Right"/>
                                 </DockPanel>
                                 
                                 <Grid Margin="0,0,0,14">
@@ -349,11 +354,11 @@
                                              Visibility="{Binding IsEditingPasswordVisible, Converter={StaticResource InvBoolToVis}}"/>
                                     
                                     <!-- Unmasked Password -->
-                                    <TextBox Grid.Column="0" Text="{Binding EditingEntry.Password, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource FormTextBoxStyle}" Margin="0" Foreground="#2563EB" FontWeight="Bold"
+                                    <TextBox Grid.Column="0" Text="{Binding EditingEntry.Password, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource FormTextBoxStyle}" Margin="0" Foreground="#00FF41" FontWeight="Bold"
                                              Visibility="{Binding IsEditingPasswordVisible, Converter={StaticResource BoolToVis}}"/>
 
                                     <Button Grid.Column="1" 
-                                            Content="⚡ Auto Generate" 
+                                            Content="⚡ AUTO GENERATE" 
                                             Command="{Binding GeneratePasswordForEntryCommand}" 
                                             Style="{StaticResource SecondaryButtonStyle}" 
                                             Margin="8,0,0,0" 
@@ -361,49 +366,49 @@
                                 </Grid>
 
                                 <!-- Embedded Password Generator Options Panel -->
-                                <Border Background="#F8FAFC" BorderBrush="#CBD5E1" BorderThickness="1" CornerRadius="8" Padding="15" Margin="0,0,0,16">
+                                <Border Background="#060D06" BorderBrush="#1A5C1A" BorderThickness="1" CornerRadius="6" Padding="15" Margin="0,0,0,16">
                                     <StackPanel DataContext="{Binding PasswordGeneratorViewModel}">
                                         <DockPanel Margin="0,0,0,10">
-                                            <TextBlock Text="⚙️ Password Generator Settings" FontSize="13" FontWeight="Bold" Foreground="#1E293B" VerticalAlignment="Center"/>
-                                            <Button Content="📋 Copy Generated" Command="{Binding CopyCommand}" Style="{StaticResource SecondaryButtonStyle}" DockPanel.Dock="Right" Padding="8,4" FontSize="11"/>
+                                            <TextBlock Text="⚙️ GENERATOR SETTINGS" FontSize="12" FontWeight="Bold" FontFamily="Consolas, Segoe UI" Foreground="#00FF41" VerticalAlignment="Center"/>
+                                            <Button Content="📋 COPY GENERATED" Command="{Binding CopyCommand}" Style="{StaticResource SecondaryButtonStyle}" DockPanel.Dock="Right" Padding="8,4" FontSize="11"/>
                                         </DockPanel>
 
                                         <!-- Length Slider -->
                                         <DockPanel Margin="0,0,0,10">
-                                            <TextBlock Text="Length: " FontSize="12" Foreground="#475569" VerticalAlignment="Center"/>
-                                            <TextBlock Text="{Binding Length}" FontSize="12" FontWeight="Bold" Foreground="#2563EB" Width="30" VerticalAlignment="Center"/>
+                                            <TextBlock Text="Length: " FontSize="12" FontFamily="Consolas, Segoe UI" Foreground="#4A7A4A" VerticalAlignment="Center"/>
+                                            <TextBlock Text="{Binding Length}" FontSize="12" FontFamily="Consolas, Segoe UI" FontWeight="Bold" Foreground="#00FF41" Width="30" VerticalAlignment="Center"/>
                                             <Slider Value="{Binding Length, Mode=TwoWay}" Minimum="4" Maximum="64" TickFrequency="1" IsSnapToTickEnabled="True" VerticalAlignment="Center"/>
                                         </DockPanel>
 
                                         <!-- Character Options Checkboxes -->
                                         <WrapPanel Margin="0,0,0,10">
-                                            <CheckBox Content="A-Z Uppercase" IsChecked="{Binding IncludeUppercase}" Margin="0,0,15,6" FontSize="12"/>
-                                            <CheckBox Content="a-z Lowercase" IsChecked="{Binding IncludeLowercase}" Margin="0,0,15,6" FontSize="12"/>
-                                            <CheckBox Content="0-9 Numbers" IsChecked="{Binding IncludeNumbers}" Margin="0,0,15,6" FontSize="12"/>
-                                            <CheckBox Content="!@# Symbols" IsChecked="{Binding IncludeSymbols}" Margin="0,0,15,6" FontSize="12"/>
+                                            <CheckBox Content="A-Z Uppercase" IsChecked="{Binding IncludeUppercase}" Foreground="#C8FFC8" FontFamily="Consolas, Segoe UI" Margin="0,0,15,6" FontSize="12"/>
+                                            <CheckBox Content="a-z Lowercase" IsChecked="{Binding IncludeLowercase}" Foreground="#C8FFC8" FontFamily="Consolas, Segoe UI" Margin="0,0,15,6" FontSize="12"/>
+                                            <CheckBox Content="0-9 Numbers" IsChecked="{Binding IncludeNumbers}" Foreground="#C8FFC8" FontFamily="Consolas, Segoe UI" Margin="0,0,15,6" FontSize="12"/>
+                                            <CheckBox Content="!@# Symbols" IsChecked="{Binding IncludeSymbols}" Foreground="#C8FFC8" FontFamily="Consolas, Segoe UI" Margin="0,0,15,6" FontSize="12"/>
                                         </WrapPanel>
 
                                         <!-- Generator Error Alert -->
-                                        <Border Background="#FEE2E2" BorderBrush="#FCA5A5" BorderThickness="1" CornerRadius="4" Padding="6" Margin="0,0,0,8"
+                                        <Border Background="#2B0000" BorderBrush="#FF2222" BorderThickness="1" CornerRadius="4" Padding="6" Margin="0,0,0,8"
                                                 Visibility="{Binding ValidationMessage, Converter={StaticResource NullToVis}}">
-                                            <TextBlock Text="{Binding ValidationMessage}" Foreground="#991B1B" FontSize="11" FontWeight="SemiBold"/>
+                                            <TextBlock Text="{Binding ValidationMessage}" Foreground="#FF6666" FontFamily="Consolas, Segoe UI" FontSize="11" FontWeight="SemiBold"/>
                                         </Border>
                                     </StackPanel>
                                 </Border>
 
-                                <TextBlock Text="Website URL" FontSize="12" FontWeight="SemiBold" Foreground="#334155"/>
+                                <TextBlock Text="Website URL" FontSize="11" FontWeight="Bold" FontFamily="Consolas, Segoe UI" Foreground="#4A7A4A"/>
                                 <TextBox Text="{Binding EditingEntry.WebsiteUrl, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource FormTextBoxStyle}"/>
 
-                                <TextBlock Text="Category" FontSize="12" FontWeight="SemiBold" Foreground="#334155"/>
-                                <ComboBox ItemsSource="{Binding CategoriesList}" Text="{Binding EditingEntry.Category, UpdateSourceTrigger=PropertyChanged}" IsEditable="True" Padding="10,8" FontSize="14" Margin="0,4,0,12" Background="White"/>
+                                <TextBlock Text="Category" FontSize="11" FontWeight="Bold" FontFamily="Consolas, Segoe UI" Foreground="#4A7A4A"/>
+                                <ComboBox ItemsSource="{Binding CategoriesList}" Text="{Binding EditingEntry.Category, UpdateSourceTrigger=PropertyChanged}" IsEditable="True" Padding="10,8" FontSize="14" FontFamily="Consolas, Segoe UI" Foreground="#C8FFC8" Margin="0,4,0,12" Background="#060D06"/>
 
-                                <TextBlock Text="Notes" FontSize="12" FontWeight="SemiBold" Foreground="#334155"/>
+                                <TextBlock Text="Notes" FontSize="11" FontWeight="Bold" FontFamily="Consolas, Segoe UI" Foreground="#4A7A4A"/>
                                 <TextBox Text="{Binding EditingEntry.Notes, UpdateSourceTrigger=PropertyChanged}" AcceptsReturn="True" Height="70" Style="{StaticResource FormTextBoxStyle}"/>
 
                                 <!-- Action Buttons -->
                                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,10,0,0">
-                                    <Button Content="Cancel (Esc)" Command="{Binding CancelCommand}" Style="{StaticResource SecondaryButtonStyle}" Margin="0,0,10,0"/>
-                                    <Button Content="💾 Save Password" Command="{Binding SaveCommand}" Style="{StaticResource PrimaryButtonStyle}"/>
+                                    <Button Content="CANCEL (Esc)" Command="{Binding CancelCommand}" Style="{StaticResource SecondaryButtonStyle}" Margin="0,0,10,0"/>
+                                    <Button Content="💾 SAVE PASSWORD" Command="{Binding SaveCommand}" Style="{StaticResource PrimaryButtonStyle}"/>
                                 </StackPanel>
                             </StackPanel>
                         </Border>
@@ -412,33 +417,33 @@
             </Grid>
 
             <!-- GLOBAL WORKSPACE BUSY OVERLAY (Loading state indicator) -->
-            <Border Grid.ColumnSpan="2" Background="#B3FFFFFF" CornerRadius="12"
+            <Border Grid.ColumnSpan="2" Background="#EE060D06" CornerRadius="8"
                     Visibility="{Binding IsBusy, Converter={StaticResource BoolToVis}}">
-                <Border Background="White" CornerRadius="10" Padding="30,20" HorizontalAlignment="Center" VerticalAlignment="Center"
-                        Effect="{DynamicResource CardShadow}">
+                <Border Background="#0D1A0D" BorderBrush="#00FF41" BorderThickness="1" CornerRadius="8" Padding="30,20" HorizontalAlignment="Center" VerticalAlignment="Center"
+                        Effect="{DynamicResource ModalShadow}">
                     <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
-                        <ProgressBar IsIndeterminate="True" Width="180" Height="6" Margin="0,0,0,12"/>
-                        <TextBlock Text="{Binding BusyMessage}" FontSize="14" FontWeight="SemiBold" Foreground="#0F172A" HorizontalAlignment="Center"/>
+                        <ProgressBar IsIndeterminate="True" Width="180" Height="6" Foreground="#00FF41" Background="#060D06" Margin="0,0,0,12"/>
+                        <TextBlock Text="{Binding BusyMessage}" FontSize="14" FontFamily="Consolas, Segoe UI" FontWeight="Bold" Foreground="#00FF41" HorizontalAlignment="Center"/>
                     </StackPanel>
                 </Border>
             </Border>
         </Grid>
 
         <!-- BOTTOM FOOTER STATUS BAR -->
-        <Border Grid.Row="2" Background="#E2E8F0" Padding="16,8">
+        <Border Grid.Row="2" Background="#020A02" BorderBrush="#1A5C1A" BorderThickness="0,1,0,0" Padding="16,8">
             <DockPanel>
                 <StackPanel Orientation="Horizontal" DockPanel.Dock="Left">
-                    <TextBlock Text="Status: " FontWeight="SemiBold" Foreground="#475569"/>
-                    <TextBlock Text="{Binding StatusMessage}" Foreground="#1E293B"/>
+                    <TextBlock Text="STATUS: " FontWeight="Bold" FontFamily="Consolas, Segoe UI" Foreground="#4A7A4A"/>
+                    <TextBlock Text="{Binding StatusMessage}" FontFamily="Consolas, Segoe UI" Foreground="#00FF41"/>
                 </StackPanel>
 
                 <StackPanel Orientation="Horizontal" DockPanel.Dock="Right" HorizontalAlignment="Right"
                             Visibility="{Binding IsVaultUnlocked, Converter={StaticResource BoolToVis}}">
-                    <TextBlock Text="Showing " Foreground="#64748B" FontSize="11"/>
-                    <TextBlock Text="{Binding FilteredEntriesCount}" Foreground="#0F172A" FontWeight="Bold" FontSize="11"/>
-                    <TextBlock Text=" of " Foreground="#64748B" FontSize="11"/>
-                    <TextBlock Text="{Binding TotalEntriesCount}" Foreground="#0F172A" FontWeight="Bold" FontSize="11"/>
-                    <TextBlock Text=" entries" Foreground="#64748B" FontSize="11"/>
+                    <TextBlock Text="Showing " Foreground="#4A7A4A" FontFamily="Consolas, Segoe UI" FontSize="11"/>
+                    <TextBlock Text="{Binding FilteredEntriesCount}" Foreground="#00FF41" FontFamily="Consolas, Segoe UI" FontWeight="Bold" FontSize="11"/>
+                    <TextBlock Text=" of " Foreground="#4A7A4A" FontFamily="Consolas, Segoe UI" FontSize="11"/>
+                    <TextBlock Text="{Binding TotalEntriesCount}" Foreground="#00FF41" FontFamily="Consolas, Segoe UI" FontWeight="Bold" FontSize="11"/>
+                    <TextBlock Text=" entries" Foreground="#4A7A4A" FontFamily="Consolas, Segoe UI" FontSize="11"/>
                 </StackPanel>
             </DockPanel>
         </Border>

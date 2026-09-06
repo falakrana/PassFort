@@ -11,54 +11,56 @@
         <helpers:InverseBooleanToVisibilityConverter x:Key="InverseBoolToVis" />
     </UserControl.Resources>
 
-    <Grid Background="#F1F5F9">
-        <Border Width="440"
+    <Grid Background="#060D06">
+        <Border Width="450"
                 HorizontalAlignment="Center"
                 VerticalAlignment="Center"
-                Background="White"
-                CornerRadius="12"
+                Background="#0D1A0D"
+                BorderBrush="#00FF41"
+                BorderThickness="1"
+                CornerRadius="8"
                 Padding="36"
-                Effect="{DynamicResource ShadowEffect}">
-            <Border.Resources>
-                <DropShadowEffect x:Key="ShadowEffect" BlurRadius="24" ShadowDepth="4" Direction="270" Color="#20000000" />
-            </Border.Resources>
+                Effect="{DynamicResource ModalShadow}">
 
             <Grid>
                 <StackPanel IsEnabled="{Binding IsBusy, Converter={StaticResource InverseBoolToVis}}">
                     <!-- Lock Icon Header -->
-                    <Border Background="#EFF6FF" Width="64" Height="64" CornerRadius="32" HorizontalAlignment="Center" Margin="0,0,0,16">
-                        <TextBlock Text="🔒" FontSize="32" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                    <Border Background="#0F2B0F" BorderBrush="#00FF41" BorderThickness="1" Width="64" Height="64" CornerRadius="32" HorizontalAlignment="Center" Margin="0,0,0,16">
+                        <TextBlock Text="🔒" FontSize="30" HorizontalAlignment="Center" VerticalAlignment="Center" />
                     </Border>
 
                     <!-- Title & Subtitle -->
                     <TextBlock Text="{Binding Title}"
                                FontSize="22"
                                FontWeight="Bold"
-                               Foreground="#0F172A"
+                               FontFamily="Consolas, Segoe UI"
+                               Foreground="#00FF41"
                                HorizontalAlignment="Center"
                                TextWrapping="Wrap"
                                Margin="0,0,0,6"/>
 
                     <TextBlock Text="{Binding Subtitle}"
                                FontSize="13"
-                               Foreground="#64748B"
+                               FontFamily="Consolas, Segoe UI"
+                               Foreground="#4A7A4A"
                                HorizontalAlignment="Center"
                                TextAlignment="Center"
                                TextWrapping="Wrap"
                                Margin="0,0,0,24"/>
 
                     <!-- Error Message Banner -->
-                    <Border Background="#FEF2F2"
-                            BorderBrush="#FCA5A5"
+                    <Border Background="#2B0000"
+                            BorderBrush="#FF2222"
                             BorderThickness="1"
-                            CornerRadius="6"
+                            CornerRadius="4"
                             Padding="12,10"
                             Margin="0,0,0,18"
                             Visibility="{Binding ErrorMessage, Converter={x:Static helpers:NullToVisibilityConverter.Instance}}">
                         <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
                             <TextBlock Text="⚠️ " FontSize="14" VerticalAlignment="Center"/>
                             <TextBlock Text="{Binding ErrorMessage}"
-                                       Foreground="#991B1B"
+                                       Foreground="#FF6666"
+                                       FontFamily="Consolas, Segoe UI"
                                        FontSize="13"
                                        FontWeight="SemiBold"
                                        TextWrapping="Wrap"
@@ -68,32 +70,39 @@
 
                     <!-- Password Input with Masking Toggle -->
                     <DockPanel Margin="0,0,0,6">
-                        <TextBlock Text="Master Password"
+                        <TextBlock Text=">_ MASTER PASSWORD"
                                    FontSize="12"
-                                   FontWeight="SemiBold"
-                                   Foreground="#334155"
+                                   FontWeight="Bold"
+                                   FontFamily="Consolas, Segoe UI"
+                                   Foreground="#4A7A4A"
                                    DockPanel.Dock="Left" />
                         <Button Content="{Binding IsPasswordVisible, Converter={StaticResource InverseBoolToVis}, StringFormat='👁️ Show', ConverterParameter='👁️ Hide'}"
                                 Command="{Binding TogglePasswordVisibilityCommand}"
-                                Foreground="#2563EB"
+                                Foreground="#00FF41"
                                 Background="Transparent"
                                 BorderThickness="0"
                                 FontSize="11"
-                                FontWeight="SemiBold"
+                                FontFamily="Consolas, Segoe UI"
+                                FontWeight="Bold"
                                 Cursor="Hand"
                                 DockPanel.Dock="Right"
                                 HorizontalAlignment="Right" />
                     </DockPanel>
 
                     <!-- Masked Password Box -->
-                    <Border BorderBrush="#CBD5E1"
+                    <Border BorderBrush="#1A5C1A"
                             BorderThickness="1"
-                            CornerRadius="6"
+                            Background="#060D06"
+                            CornerRadius="4"
                             Padding="4"
                             Margin="0,0,0,16"
                             Visibility="{Binding IsPasswordVisible, Converter={StaticResource InverseBoolToVis}}">
                         <PasswordBox x:Name="MasterPasswordBox"
                                      FontSize="14"
+                                     FontFamily="Consolas, Segoe UI"
+                                     Foreground="#C8FFC8"
+                                     CaretBrush="#00FF41"
+                                     Background="Transparent"
                                      BorderThickness="0"
                                      Padding="6,4"
                                      helpers:PasswordBoxHelper.Attach="True"
@@ -101,33 +110,44 @@
                     </Border>
 
                     <!-- Unmasked Password Box -->
-                    <Border BorderBrush="#2563EB"
+                    <Border BorderBrush="#00FF41"
                             BorderThickness="1"
-                            CornerRadius="6"
+                            Background="#060D06"
+                            CornerRadius="4"
                             Padding="4"
                             Margin="0,0,0,16"
                             Visibility="{Binding IsPasswordVisible, Converter={StaticResource BoolToVis}}">
                         <TextBox Text="{Binding Password, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                  FontSize="14"
+                                 FontFamily="Consolas, Segoe UI"
+                                 Foreground="#00FF41"
+                                 CaretBrush="#00FF41"
+                                 Background="Transparent"
                                  BorderThickness="0"
                                  Padding="6,4" />
                     </Border>
 
                     <!-- Confirm Password Input (First Run Only) -->
                     <StackPanel Visibility="{Binding IsFirstRun, Converter={StaticResource BoolToVis}}">
-                        <TextBlock Text="Confirm Master Password"
+                        <TextBlock Text=">_ CONFIRM MASTER PASSWORD"
                                    FontSize="12"
-                                   FontWeight="SemiBold"
-                                   Foreground="#334155"
+                                   FontWeight="Bold"
+                                   FontFamily="Consolas, Segoe UI"
+                                   Foreground="#4A7A4A"
                                    Margin="0,0,0,6" />
 
-                        <Border BorderBrush="#CBD5E1"
+                        <Border BorderBrush="#1A5C1A"
                                 BorderThickness="1"
-                                CornerRadius="6"
+                                Background="#060D06"
+                                CornerRadius="4"
                                 Padding="4"
                                 Margin="0,0,0,16">
                             <PasswordBox x:Name="ConfirmPasswordBox"
                                          FontSize="14"
+                                         FontFamily="Consolas, Segoe UI"
+                                         Foreground="#C8FFC8"
+                                         CaretBrush="#00FF41"
+                                         Background="Transparent"
                                          BorderThickness="0"
                                          Padding="6,4"
                                          helpers:PasswordBoxHelper.Attach="True"
@@ -136,17 +156,17 @@
                     </StackPanel>
 
                     <!-- Action Button: Setup Master Password (First Run) -->
-                    <Button Content="Create Master Password &amp; Unlock Vault"
+                    <Button Content="CREATE MASTER PASSWORD &amp; UNLOCK"
                             Command="{Binding SetupCommand}"
                             IsDefault="True"
                             Visibility="{Binding IsFirstRun, Converter={StaticResource BoolToVis}}"
                             Style="{StaticResource PrimaryButtonStyle}"
                             Height="42"
-                            FontSize="14"
+                            FontSize="13"
                             Margin="0,8,0,0" />
 
                     <!-- Action Button: Unlock Vault (Existing Vault) -->
-                    <Button Content="🔓 Unlock Vault"
+                    <Button Content="🔓 UNLOCK VAULT"
                             Command="{Binding UnlockCommand}"
                             IsDefault="True"
                             Visibility="{Binding IsFirstRun, Converter={StaticResource InverseBoolToVis}}"
@@ -157,12 +177,14 @@
                 </StackPanel>
 
                 <!-- BUSY OVERLAY (Loading spinner indicator) -->
-                <Border Background="#CCFFFFFF"
-                        CornerRadius="12"
+                <Border Background="#EE060D06"
+                        BorderBrush="#00FF41"
+                        BorderThickness="1"
+                        CornerRadius="8"
                         Visibility="{Binding IsBusy, Converter={StaticResource BoolToVis}}">
                     <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
-                        <ProgressBar IsIndeterminate="True" Width="160" Height="6" Margin="0,0,0,12"/>
-                        <TextBlock Text="{Binding BusyMessage}" FontSize="14" FontWeight="SemiBold" Foreground="#1E293B" HorizontalAlignment="Center"/>
+                        <ProgressBar IsIndeterminate="True" Width="160" Height="6" Foreground="#00FF41" Background="#0D1A0D" Margin="0,0,0,12"/>
+                        <TextBlock Text="{Binding BusyMessage}" FontSize="14" FontFamily="Consolas, Segoe UI" FontWeight="Bold" Foreground="#00FF41" HorizontalAlignment="Center"/>
                     </StackPanel>
                 </Border>
             </Grid>

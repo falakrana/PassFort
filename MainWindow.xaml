@@ -9,6 +9,7 @@
         mc:Ignorable="d"
         Title="{Binding Title}" Height="680" Width="980"
         WindowStartupLocation="CenterScreen"
+        Background="#060D06"
         d:DataContext="{d:DesignInstance Type=vm:MainViewModel, IsDesignTimeCreatable=True}">
 
     <Window.Resources>
@@ -24,7 +25,7 @@
         <KeyBinding Key="Escape" Command="{Binding CancelCommand}" />
     </Window.InputBindings>
 
-    <Grid>
+    <Grid Background="#060D06">
         <!-- LOGIN / SETUP VIEW (Visible when Vault is Locked) -->
         <views:LoginView DataContext="{Binding LoginViewModel}"
                          Visibility="{Binding DataContext.IsVaultUnlocked, RelativeSource={RelativeSource AncestorType=Window}, Converter={StaticResource InvBoolToVis}}" />

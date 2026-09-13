@@ -56,6 +56,16 @@ public interface IAuthenticationService
     void Lock();
 
     /// <summary>
+    /// Gets the optional password hint stored alongside the vault. Returns null if no hint is set.
+    /// </summary>
+    string? GetHint();
+
+    /// <summary>
+    /// Saves (or clears) the optional plain-text password hint alongside the vault.
+    /// </summary>
+    void SetHint(string? hint);
+
+    /// <summary>
     /// Changes the master password, re-encrypting the vault payload with a newly derived key and fresh salt.
     /// </summary>
     /// <param name="currentPassword">The current master password for authentication verification.</param>

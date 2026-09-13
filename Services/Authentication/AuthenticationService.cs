@@ -153,6 +153,10 @@ public class AuthenticationService : IAuthenticationService
         }
     }
 
+    public string? GetHint() => _vaultStorage.ReadHint();
+
+    public void SetHint(string? hint) => _vaultStorage.WriteHint(hint);
+
     public bool ChangeMasterPassword(string currentPassword, string newPassword, string confirmNewPassword, out string? errorMessage)
     {
         if (!IsUnlocked || _activeKey == null || _activeSalt == null)

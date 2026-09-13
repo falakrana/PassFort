@@ -13,6 +13,7 @@ using PasswordManager.Services.AutoLock;
 using PasswordManager.Services.Clipboard;
 using PasswordManager.Services.Encryption;
 using PasswordManager.Services.PasswordGenerator;
+using PasswordManager.Services.Recovery;
 using PasswordManager.Services.UI;
 using PasswordManager.Services.Vault;
 using PasswordManager.ViewModels.Base;
@@ -54,6 +55,11 @@ public class MainViewModel : ViewModelBase
     private string _confirmNewMasterPassword = string.Empty;
     private string? _changePasswordErrorMessage;
     private string? _changePasswordSuccessMessage;
+
+    // Hint & recovery key (settings panel)
+    private string _hintText = string.Empty;
+    private string? _generatedRecoveryKey;   // shown once after first-run
+    private bool _isRecoveryKeyVisible;
 
     public MainViewModel(
         IPasswordService passwordService,
@@ -99,6 +105,9 @@ public class MainViewModel : ViewModelBase
         OpenSettingsCommand = new RelayCommand(ExecuteOpenSettings, CanExecuteOpenSettings);
         CloseSettingsCommand = new RelayCommand(ExecuteCloseSettings);
         ChangeMasterPasswordCommand = new RelayCommand(ExecuteChangeMasterPassword, CanExecuteChangeMasterPassword);
+        SaveHintCommand = new RelayCommand(ExecuteSaveHint, () => IsVaultUnlocked && IsSettingsOpen);
+        CopyRecoveryKeyCommand = new RelayCommand(ExecuteCopyRecoveryKey, () => !string.IsNullOrEmpty(GeneratedRecoveryKey));
+        DismissRecoveryKeyCommand = new RelayCommand(ExecuteDismissRecoveryKey);
 
         if (IsVaultUnlocked)
         {
@@ -299,6 +308,27 @@ public class MainViewModel : ViewModelBase
         set => SetProperty(ref _changePasswordSuccessMessage, value);
     }
 
+    /// <summary>Hint text the user can view/edit in settings.</summary>
+    public string HintText
+    {
+        get => _hintText;
+        set => SetProperty(ref _hintText, value);
+    }
+
+    /// <summary>Recovery key shown once after first-run (null once dismissed).</summary>
+    public string? GeneratedRecoveryKey
+    {
+        get => _generatedRecoveryKey;
+        set => SetProperty(ref _generatedRecoveryKey, value);
+    }
+
+    /// <summary>Whether the first-run recovery key banner is visible.</summary>
+    public bool IsRecoveryKeyVisible
+    {
+        get => _isRecoveryKeyVisible;
+        set => SetProperty(ref _isRecoveryKeyVisible, value);
+    }
+
     public ICommand AddNewCommand { get; }
     public ICommand EditCommand { get; }
     public ICommand SaveCommand { get; }
@@ -314,6 +344,9 @@ public class MainViewModel : ViewModelBase
     public ICommand OpenSettingsCommand { get; }
     public ICommand CloseSettingsCommand { get; }
     public ICommand ChangeMasterPasswordCommand { get; }
+    public ICommand SaveHintCommand { get; }
+    public ICommand CopyRecoveryKeyCommand { get; }
+    public ICommand DismissRecoveryKeyCommand { get; }
 
     public void LoadEntries()
     {
@@ -398,6 +431,15 @@ public class MainViewModel : ViewModelBase
         OnPropertyChanged(nameof(IsVaultUnlocked));
         LoadEntries();
         StatusMessage = "Vault unlocked successfully.";
+
+        // On first-run: generate recovery key and surface it to the user
+        if (!LoginViewModel.HasRecoveryKey)
+        {
+            var storage = new FileVaultStorage();
+            var recoveryService = new RecoveryService(storage, new AesGcmEncryptionService(), _authService);
+            GeneratedRecoveryKey = recoveryService.GenerateAndSaveRecoveryKey();
+            IsRecoveryKeyVisible = true;
+        }
     }
 
     private void OnLockStateChanged()
@@ -453,6 +495,8 @@ public class MainViewModel : ViewModelBase
         ConfirmNewMasterPassword = string.Empty;
         ChangePasswordErrorMessage = null;
         ChangePasswordSuccessMessage = null;
+        // Load existing hint for editing
+        HintText = _authService.GetHint() ?? string.Empty;
         IsSettingsOpen = true;
     }
 
@@ -463,6 +507,7 @@ public class MainViewModel : ViewModelBase
         ConfirmNewMasterPassword = string.Empty;
         ChangePasswordErrorMessage = null;
         ChangePasswordSuccessMessage = null;
+        HintText = string.Empty;
         IsSettingsOpen = false;
     }
 
@@ -485,6 +530,28 @@ public class MainViewModel : ViewModelBase
         {
             ChangePasswordErrorMessage = error;
         }
+    }
+
+    private void ExecuteSaveHint()
+    {
+        _authService.SetHint(HintText);
+        ChangePasswordSuccessMessage = "Hint saved successfully!";
+        StatusMessage = "Password hint updated.";
+    }
+
+    private void ExecuteCopyRecoveryKey()
+    {
+        if (!string.IsNullOrEmpty(GeneratedRecoveryKey))
+        {
+            Clipboard.SetText(GeneratedRecoveryKey);
+            StatusMessage = "Recovery key copied to clipboard.";
+        }
+    }
+
+    private void ExecuteDismissRecoveryKey()
+    {
+        GeneratedRecoveryKey = null;
+        IsRecoveryKeyVisible = false;
     }
 
     private void OnClipboardCleared(string clearedText)

@@ -36,6 +36,16 @@ public static class Phase9AutoLockTests
         }
 
         public void DeleteVault() => _payload = null;
+
+        // Hint stubs (no-op for tests)
+        public string? ReadHint() => null;
+        public void WriteHint(string? hint) { }
+
+        // Recovery stubs (no-op for tests)
+        public bool RecoveryPayloadExists() => false;
+        public EncryptedPayload ReadRecoveryPayload() => throw new InvalidOperationException("No recovery payload.");
+        public void WriteRecoveryPayload(EncryptedPayload payload) { }
+        public void DeleteRecoveryPayload() { }
     }
 
     private class InMemoryClipboardService : IClipboardService

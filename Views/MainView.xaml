@@ -53,6 +53,36 @@
             <ContentControl Content="{Binding LoginViewModel}"/>
         </Grid>
 
+        <!-- RECOVERY KEY BANNER (shown once after first-run setup) -->
+        <Border Grid.Row="1"
+                Background="#0A1F0A"
+                BorderBrush="#00FF41"
+                BorderThickness="1"
+                CornerRadius="8"
+                Padding="20,16"
+                Margin="40,20,40,0"
+                VerticalAlignment="Top"
+                Panel.ZIndex="10"
+                Visibility="{Binding IsRecoveryKeyVisible, Converter={StaticResource BoolToVis}}">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                <StackPanel Grid.Column="0">
+                    <TextBlock Text="🔑 SAVE YOUR RECOVERY KEY" FontSize="13" FontWeight="Bold" FontFamily="Consolas, Segoe UI" Foreground="#00FF41" Margin="0,0,0,6"/>
+                    <TextBlock Text="Store this key somewhere safe (USB drive, printed paper, password manager). It's the only way to recover your vault if you forget your master password." FontSize="11" FontFamily="Consolas, Segoe UI" Foreground="#4A7A4A" TextWrapping="Wrap" Margin="0,0,0,10"/>
+                    <Border Background="#060D06" BorderBrush="#1A5C1A" BorderThickness="1" CornerRadius="4" Padding="10,8" Margin="0,0,0,10">
+                        <TextBlock Text="{Binding GeneratedRecoveryKey}" FontSize="15" FontWeight="Bold" FontFamily="Consolas, Segoe UI" Foreground="#00FF41" TextWrapping="Wrap"/>
+                    </Border>
+                    <StackPanel Orientation="Horizontal">
+                        <Button Content="📋 Copy Key" Command="{Binding CopyRecoveryKeyCommand}" Style="{StaticResource SecondaryButtonStyle}" Padding="10,5" FontSize="12" Margin="0,0,10,0"/>
+                        <Button Content="✓ I've saved it — Dismiss" Command="{Binding DismissRecoveryKeyCommand}" Style="{StaticResource PrimaryButtonStyle}" Padding="10,5" FontSize="12"/>
+                    </StackPanel>
+                </StackPanel>
+            </Grid>
+        </Border>
+
         <!-- VAULT MAIN WORKSPACE (Visible when vault is unlocked) -->
         <Grid Grid.Row="1" Margin="20" Visibility="{Binding IsVaultUnlocked, Converter={StaticResource BoolToVis}}">
             <Grid.ColumnDefinitions>
@@ -473,16 +503,31 @@
 
                         <!-- Confirm New Master Password -->
                         <TextBlock Text="CONFIRM NEW MASTER PASSWORD" FontSize="11" FontWeight="Bold" FontFamily="Consolas, Segoe UI" Foreground="#4A7A4A" Margin="0,0,0,4"/>
-                        <Border BorderBrush="#1A5C1A" BorderThickness="1" Background="#060D06" CornerRadius="4" Padding="4" Margin="0,0,0,20">
+                        <Border BorderBrush="#1A5C1A" BorderThickness="1" Background="#060D06" CornerRadius="4" Padding="4" Margin="0,0,0,16">
                             <PasswordBox FontSize="14" FontFamily="Consolas, Segoe UI" Foreground="#C8FFC8" CaretBrush="#00FF41" Background="Transparent" BorderThickness="0" Padding="6,4"
                                          helpers:PasswordBoxHelper.Attach="True"
                                          helpers:PasswordBoxHelper.BoundPassword="{Binding ConfirmNewMasterPassword, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
                         </Border>
 
+                        <!-- Change Password Action -->
+                        <Button Content="🔑 CHANGE MASTER PASSWORD" Command="{Binding ChangeMasterPasswordCommand}" Style="{StaticResource PrimaryButtonStyle}" Padding="14,8" Margin="0,0,0,20" HorizontalAlignment="Right"/>
+
+                        <!-- Separator -->
+                        <Border BorderBrush="#1A5C1A" BorderThickness="0,1,0,0" Margin="0,0,0,16"/>
+
+                        <!-- Password Hint Section -->
+                        <TextBlock Text="PASSWORD HINT" FontSize="11" FontWeight="Bold" FontFamily="Consolas, Segoe UI" Foreground="#4A7A4A" Margin="0,0,0,4"/>
+                        <TextBlock Text="A vague reminder shown on the login screen. Keep it subtle." FontSize="11" FontFamily="Consolas, Segoe UI" Foreground="#3A5A3A" Margin="0,0,0,8" TextWrapping="Wrap"/>
+                        <Border BorderBrush="#1A5C1A" BorderThickness="1" Background="#060D06" CornerRadius="4" Padding="4" Margin="0,0,0,10">
+                            <TextBox Text="{Binding HintText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                     FontSize="13" FontFamily="Consolas, Segoe UI" Foreground="#C8FFC8"
+                                     CaretBrush="#00FF41" Background="Transparent" BorderThickness="0" Padding="6,4"/>
+                        </Border>
+
                         <!-- Action Buttons -->
                         <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
                             <Button Content="CANCEL" Command="{Binding CloseSettingsCommand}" Style="{StaticResource SecondaryButtonStyle}" Margin="0,0,10,0" Padding="14,8"/>
-                            <Button Content="🔑 CHANGE MASTER PASSWORD" Command="{Binding ChangeMasterPasswordCommand}" Style="{StaticResource PrimaryButtonStyle}" Padding="14,8"/>
+                            <Button Content="💾 SAVE HINT" Command="{Binding SaveHintCommand}" Style="{StaticResource SecondaryButtonStyle}" Padding="14,8"/>
                         </StackPanel>
                     </StackPanel>
                 </Border>

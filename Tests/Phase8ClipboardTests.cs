@@ -113,6 +113,16 @@ public static class Phase8ClipboardTests
         {
             _storedPayload = null;
         }
+
+        // Hint stubs (no-op for tests)
+        public string? ReadHint() => null;
+        public void WriteHint(string? hint) { }
+
+        // Recovery stubs (no-op for tests)
+        public bool RecoveryPayloadExists() => false;
+        public EncryptedPayload ReadRecoveryPayload() => throw new InvalidOperationException("No recovery payload.");
+        public void WriteRecoveryPayload(EncryptedPayload payload) { }
+        public void DeleteRecoveryPayload() { }
     }
 
     private class TestDialogService : Services.UI.IDialogService
